@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#FAFAFA;}</style>
+<script src="image-slot.js"></script>
+</helmet>
+<div style="background:#FAFAFA;font-family:'Manrope',sans-serif;color:#241F1A;">
+  <dc-import name="Nav" active="gallery" hint-size="100%,96px"></dc-import>
+
+  <section style="max-width:1320px;margin:0 auto;padding:100px 40px 70px;">
+    <div style="font-size:12.5px;letter-spacing:3px;text-transform:uppercase;color:#CB2125;font-weight:600;margin-bottom:24px;">Gallery</div>
+    <h1 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:clamp(34px,6vw,56px);line-height:1.14;margin:0 0 28px;color:#2A397D;max-width:840px;letter-spacing:-0.5px;">Our produce, in real photos.</h1>
+    <p style="font-size:18px;line-height:1.8;font-weight:300;color:#4A4438;max-width:640px;margin:0;">A closer look at the fruits and vegetables we supply. Drag your own product photos onto any tile below to fill it in.</p>
+  </section>
+
+  <section style="max-width:1320px;margin:0 auto;padding:0 40px 130px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;">
+      <sc-for list="{{ slots }}" as="s" hint-placeholder-count="60">
+        <div style="border-radius:8px;overflow:hidden;background:#FFFFFF;border:1px solid #EFE9DC;">
+          <div style="width:100%;aspect-ratio:1;">
+            <image-slot id="{{ s.id }}" src="{{ s.src }}" placeholder="{{ s.placeholder }}" shape="rect"></image-slot>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <dc-import name="Footer" hint-size="100%,360px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+class Component extends DCLogic {
+  renderVals() {
+    const ids = [
+      1347,1348,1349,1352,1353,1360,1361,1370,1371,1372,1390,1391,1392,1393,1394,
+      1402,1403,1404,1405,1406,1407,1409,1420,1421,1427,1437,1438,1439,1440,1441,
+      1442,1443,1446,1447,1448,1449,1473,1474,1477,1478,1482,1484,1485,1486,1497,
+      1509,1510,1511,1512,1513,1515,1517,1555,1556,1560,1561,1565,1566,1567,1568,
+    ];
+    const photos = ids.map(id => 'assets/gallery/' + id + '.jpg');
+    const slots = photos.map((src, i) => ({
+      id: 'gallery-product-' + i,
+      src,
+      placeholder: 'Drop a photo',
+    }));
+    return { slots };
+  }
+}
+</script>
+</body>
+</html>
