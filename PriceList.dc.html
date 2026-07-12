@@ -257,7 +257,7 @@ function csvToItems(matrix) {
   const header = matrix[0].map(h => String(h).trim().toLowerCase());
   const idx = (name) => header.indexOf(name);
   const iProd = idx('product'), iCat = idx('category'), iUnit = idx('packing') !== -1 ? idx('packing') : idx('unit'),
-        iPrice = idx('price (tzs)') !== -1 ? idx('price (tzs)') : idx('price'),
+        iPrice = header.findIndex((h) => h.startsWith('price')),
         iPhoto = idx('photo link (google drive)') !== -1 ? idx('photo link (google drive)') : idx('photo'),
         iActive = idx('active (yes/no)') !== -1 ? idx('active (yes/no)') : idx('active'),
         // Optional column — add "Instagram (Yes/No)" to a sheet tab to hand-pick which
