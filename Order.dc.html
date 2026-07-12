@@ -13,7 +13,11 @@
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="dns-prefetch" href="https://docs.google.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<style>body{margin:0;background:#FAFAFA;} input,textarea,select{font-family:'Manrope',sans-serif;}</style>
+<style>body{margin:0;background:#FAFAFA;} input,textarea,select{font-family:'Manrope',sans-serif;}
+@media (max-width: 600px) {
+  .rf-tile-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+</style>
 </helmet>
 <div style="background:#FAFAFA;font-family:'Manrope',sans-serif;color:#241F1A;padding-bottom:{{ bottomBarSpace }};">
   <dc-import name="Nav" active="order" hint-size="100%,96px"></dc-import>
@@ -36,7 +40,7 @@
   <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
     <section style="max-width:1320px;margin:0 auto;padding:16px 40px 8px;">
       <sc-if value="{{ loadingProducts }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;margin-top:24px;">
+        <div class="rf-tile-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;margin-top:24px;">
           <sc-for list="{{ loadingTiles }}" as="t" hint-placeholder-count="8">
             <div style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;background:#FFFFFF;">
               <div style="width:100%;aspect-ratio:1;background:#F2EEE4;"></div>
@@ -48,13 +52,13 @@
       <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="3">
         <div style="margin-top:24px;">
           <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:18px;color:#2A397D;margin-bottom:14px;">{{ cat.name }}</div>
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;">
+          <div class="rf-tile-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;">
             <sc-for list="{{ cat.items }}" as="p" hint-placeholder-count="4">
               <div style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;background:#FFFFFF;opacity:{{ p.tileOpacity }};">
                 <div style="width:100%;aspect-ratio:1;background:{{ p.placeholderBg }};position:relative;display:flex;align-items:center;justify-content:center;">
                   <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:#8A8371;">photo</span>
                   <sc-if value="{{ p.photo }}" hint-placeholder-val="{{ false }}">
-                    <img src="{{ p.photo }}" alt="{{ p.name }}" style="position:relative;width:100%;height:100%;object-fit:{{ p.imageFit }};object-position:{{ p.imagePosition }};transform:scale({{ p.imageScale }});" />
+                    <img src="{{ p.photo }}" alt="{{ p.name }}" loading="lazy" decoding="async" data-fallback="{{ p.photoFallback }}" onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" style="position:relative;width:100%;height:100%;object-fit:{{ p.imageFit }};object-position:{{ p.imagePosition }};transform:scale({{ p.imageScale }});" />
                   </sc-if>
                   <sc-if value="{{ p.outOfStock }}" hint-placeholder-val="{{ false }}">
                     <span style="position:absolute;top:8px;left:8px;background:#241F1A;color:#FFFFFF;font-size:9.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;">Out of stock</span>
@@ -193,9 +197,18 @@ function driveLinkToDirectUrl(link) {
   const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
   for (const p of patterns) {
     const m = link.match(p);
-    if (m) return 'https://lh3.googleusercontent.com/d/' + m[1];
+    if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1000';
   }
   return link;
+}
+function driveLinkToFallbackUrl(link) {
+  if (!link) return '';
+  const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
+  for (const p of patterns) {
+    const m = link.match(p);
+    if (m) return 'https://lh3.googleusercontent.com/d/' + m[1] + '=w1000';
+  }
+  return '';
 }
 
 const PLACEHOLDER_PALETTE = [
@@ -224,6 +237,7 @@ function csvToProducts(matrix, location) {
       name, unit, location,
       category: String(r[iCat] || '').trim() || 'Other',
       photo: driveLinkToDirectUrl(String(r[iPhoto] || '').trim()),
+      photoFallback: driveLinkToFallbackUrl(String(r[iPhoto] || '').trim()),
       price: Number(String(r[iPrice] || '').replace(/[^0-9.]/g, '')) || 0,
       inStock: activeRaw.toLowerCase() !== 'no',
     });
@@ -241,7 +255,7 @@ function dedupeProducts(items) {
     if (!existing) { byKey.set(key, { ...item, locations: item.inStock ? [item.location] : [] }); return; }
     if (item.inStock) existing.locations.push(item.location);
     existing.inStock = existing.inStock || item.inStock;
-    if (!existing.photo && item.photo) existing.photo = item.photo;
+    if (!existing.photo && item.photo) { existing.photo = item.photo; existing.photoFallback = item.photoFallback; }
     if (!existing.price && item.price) existing.price = item.price;
   });
   return Array.from(byKey.values());
@@ -350,6 +364,7 @@ class Component extends DCLogic {
         placeholderBg: PLACEHOLDER_PALETTE[i % PLACEHOLDER_PALETTE.length],
         priceLabel: p.price > 0 ? Number(p.price).toLocaleString('en-US') + ' TZS' : '',
         imagePosition: IMAGE_POSITION_OVERRIDES[p.name] || 'center',
+        photoFallback: p.photoFallback || '',
         imageFit: IMAGE_FIT_CONTAIN.includes(p.name) ? 'contain' : 'cover',
         imageScale: IMAGE_SCALE_OVERRIDES[p.name] || 1,
         increment: () => inStock && this.setState({ quantities: { ...this.state.quantities, [key]: qty + 1 } }),
