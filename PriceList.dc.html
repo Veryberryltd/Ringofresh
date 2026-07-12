@@ -10,6 +10,8 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="dns-prefetch" href="https://docs.google.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -60,6 +62,16 @@
       </div>
       <div style="height:1px;background:#EAE2D3;margin:18px 0 4px;"></div>
 
+      <sc-if value="{{ loadingSheet }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;margin-top:28px;">
+          <sc-for list="{{ loadingTiles }}" as="t" hint-placeholder-count="8">
+            <div style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;">
+              <div style="width:100%;aspect-ratio:1;background:#F2EEE4;"></div>
+              <div style="padding:10px 12px 12px;"><div style="height:12px;width:70%;background:#F2EEE4;border-radius:4px;margin-bottom:8px;"></div><div style="height:10px;width:45%;background:#F2EEE4;border-radius:4px;"></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
       <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="0">
         <div style="margin-top:28px;">
           <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:18px;color:#2A397D;margin-bottom:14px;">{{ cat.name }}</div>
@@ -126,7 +138,7 @@
   <dc-import name="Footer" hint-size="100%,360px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://docs.google.com/spreadsheets/d/e/2PACX-1vRherm9cXGptXtg2O_mIci9UyJUs--V3ylWrnZ0qOLU5zu7DzcouglHEWgA0KDI2tbdmC8O6AlEHcn4/pub?gid=1660990277&amp;single=true&amp;output=csv&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;kkoCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://docs.google.com/spreadsheets/d/e/2PACX-1vRherm9cXGptXtg2O_mIci9UyJUs--V3ylWrnZ0qOLU5zu7DzcouglHEWgA0KDI2tbdmC8O6AlEHcn4/pub?gid=541301143&amp;single=true&amp;output=csv&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=oysterbay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;kkoCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=kko&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
 // Per-product crop nudges — matches Order form's overrides so the same photo
 // frames consistently across both pages.
 const IMAGE_POSITION_OVERRIDES = {
@@ -143,6 +155,8 @@ const PLACEHOLDER_PALETTE = [
   'repeating-linear-gradient(45deg,#F2CFA0,#F2CFA0 6px,#E9BE86 6px,#E9BE86 12px)',
   'repeating-linear-gradient(45deg,#C3C8E4,#C3C8E4 6px,#B2B8DA 6px,#B2B8DA 12px)',
 ];
+
+const LOADING_TILES = [0, 1, 2, 3, 4, 5, 6, 7];
 
 const SAMPLE_LOCATIONS = {
   oysterbay: [
@@ -287,7 +301,8 @@ function buildCategories(locations) {
 
 class Component extends DCLogic {
   state = {
-    locations: SAMPLE_LOCATIONS,
+    locations: {},
+    loadingSheet: true,
     selectedLocation: 'oysterbay',
     usingFallback: true,
     hasError: false,
@@ -313,6 +328,13 @@ class Component extends DCLogic {
     try {
       const updated = localStorage.getItem('ringfresh_price_updated');
       if (updated) this.setState({ lastUpdated: updated });
+      const cached = localStorage.getItem('ringfresh_price_locations_cache');
+      if (cached) {
+        const locations = JSON.parse(cached);
+        if (locations.oysterbay.length || locations.kko.length) {
+          this.setState({ locations, loadingSheet: false });
+        }
+      }
     } catch (e) {}
   }
 
@@ -325,15 +347,20 @@ class Component extends DCLogic {
       // not just the browser's — otherwise recent sheet edits can take a few minutes
       // to show up here even with cache:'no-store'.
       const bust = '&t=' + Date.now();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000);
       const [oyText, kkoText] = await Promise.all([
-        oyUrl ? fetch(oyUrl + bust, { cache: 'no-store' }).then(r => r.text()) : Promise.resolve(''),
-        kkoUrl ? fetch(kkoUrl + bust, { cache: 'no-store' }).then(r => r.text()) : Promise.resolve(''),
+        oyUrl ? fetch(oyUrl + bust, { cache: 'no-store', signal: controller.signal }).then(r => r.text()) : Promise.resolve(''),
+        kkoUrl ? fetch(kkoUrl + bust, { cache: 'no-store', signal: controller.signal }).then(r => r.text()) : Promise.resolve(''),
       ]);
+      clearTimeout(timeout);
       const locations = {
         oysterbay: oyText ? csvToItems(parseCsv(oyText)) : [],
         kko: kkoText ? csvToItems(parseCsv(kkoText)) : [],
       };
       if (!locations.oysterbay.length && !locations.kko.length) throw new Error('empty');
+      this.setState({ loadingSheet: false });
+      try { localStorage.setItem('ringfresh_price_locations_cache', JSON.stringify(locations)); } catch (e) {}
       const now = new Date().toISOString();
       const hash = simpleHash(oyText + '|' + kkoText);
       let updated = now;
@@ -346,7 +373,13 @@ class Component extends DCLogic {
       } catch (e) {}
       this.setState({ locations, usingFallback: false, hasError: false, lastUpdated: updated, lastChecked: now });
     } catch (e) {
-      this.setState({ hasError: true, lastChecked: new Date().toISOString() });
+      this.setState((s) => ({
+        hasError: true,
+        loadingSheet: false,
+        lastChecked: new Date().toISOString(),
+        locations: (s.locations.oysterbay && s.locations.oysterbay.length) || (s.locations.kko && s.locations.kko.length) ? s.locations : SAMPLE_LOCATIONS,
+        usingFallback: (s.locations.oysterbay && s.locations.oysterbay.length) || (s.locations.kko && s.locations.kko.length) ? s.usingFallback : true,
+      }));
     }
   }
 
@@ -470,6 +503,8 @@ class Component extends DCLogic {
     const now = new Date();
     return {
       categories,
+      loadingSheet: this.state.loadingSheet,
+      loadingTiles: LOADING_TILES,
       usingFallback: this.state.usingFallback,
       hasError: this.state.hasError,
       lastUpdatedLabel: this.fmtDate(this.state.lastUpdated) === '—' ? this.fmtDate(new Date().toISOString()) : this.fmtDate(this.state.lastUpdated),

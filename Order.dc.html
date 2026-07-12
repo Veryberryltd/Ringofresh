@@ -10,6 +10,8 @@
 <helmet>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+<link rel="preconnect" href="https://docs.google.com">
+<link rel="dns-prefetch" href="https://docs.google.com">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>body{margin:0;background:#FAFAFA;} input,textarea,select{font-family:'Manrope',sans-serif;}</style>
 </helmet>
@@ -33,6 +35,16 @@
 
   <sc-if value="{{ notSubmitted }}" hint-placeholder-val="{{ true }}">
     <section style="max-width:1320px;margin:0 auto;padding:16px 40px 8px;">
+      <sc-if value="{{ loadingProducts }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:18px;margin-top:24px;">
+          <sc-for list="{{ loadingTiles }}" as="t" hint-placeholder-count="8">
+            <div style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;background:#FFFFFF;">
+              <div style="width:100%;aspect-ratio:1;background:#F2EEE4;"></div>
+              <div style="padding:10px 12px 12px;"><div style="height:12px;width:70%;background:#F2EEE4;border-radius:4px;margin-bottom:8px;"></div><div style="height:10px;width:45%;background:#F2EEE4;border-radius:4px;"></div></div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
       <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="3">
         <div style="margin-top:24px;">
           <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:18px;color:#2A397D;margin-bottom:14px;">{{ cat.name }}</div>
@@ -151,7 +163,7 @@
   <dc-import name="Footer" hint-size="100%,360px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://docs.google.com/spreadsheets/d/e/2PACX-1vRherm9cXGptXtg2O_mIci9UyJUs--V3ylWrnZ0qOLU5zu7DzcouglHEWgA0KDI2tbdmC8O6AlEHcn4/pub?gid=1660990277&amp;single=true&amp;output=csv&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;kkoCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://docs.google.com/spreadsheets/d/e/2PACX-1vRherm9cXGptXtg2O_mIci9UyJUs--V3ylWrnZ0qOLU5zu7DzcouglHEWgA0KDI2tbdmC8O6AlEHcn4/pub?gid=541301143&amp;single=true&amp;output=csv&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;ordersEndpointUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbzpMbYFfEE8ueF5HQikdbFMWon9mhaq6xI7aShV6nJW1EzA7ysMNS3Z_x9A8I5vSs6G/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=oysterbay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;kkoCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=kko&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;ordersEndpointUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbzpMbYFfEE8ueF5HQikdbFMWon9mhaq6xI7aShV6nJW1EzA7ysMNS3Z_x9A8I5vSs6G/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
 function parseCsv(text) {
   const rows = [];
   let row = [], field = '', inQuotes = false;
@@ -235,6 +247,8 @@ function dedupeProducts(items) {
   return Array.from(byKey.values());
 }
 
+const LOADING_TILES = [0, 1, 2, 3, 4, 5, 6, 7];
+
 // Fallback shown only if the live sheet can't be reached.
 const SAMPLE_PRODUCTS = [
   { name: 'Mango', unit: 'per crate', location: 'oysterbay', locations: ['oysterbay'], category: 'Fruits', photo: '' },
@@ -266,13 +280,21 @@ class Component extends DCLogic {
     submitting: false,
     submitError: false,
     submitErrorMessage: '',
-    products: SAMPLE_PRODUCTS,
+    products: [],
+    loadingProducts: true,
     quantities: {},
     customerName: '', businessName: '', phone: '', email: '',
     deliveryAddress: '', deliveryDate: '', notes: '',
   };
 
   componentDidMount() {
+    try {
+      const cached = localStorage.getItem('ringfresh_order_products_cache');
+      if (cached) {
+        const products = JSON.parse(cached);
+        if (products.length) this.setState({ products, loadingProducts: false });
+      }
+    } catch (e) {}
     this.fetchProducts();
   }
 
@@ -282,17 +304,25 @@ class Component extends DCLogic {
     if (!oyUrl && !kkoUrl) return;
     try {
       const bust = '&t=' + Date.now();
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 6000);
       const [oyText, kkoText] = await Promise.all([
-        oyUrl ? fetch(oyUrl + bust, { cache: 'no-store' }).then(r => r.text()) : Promise.resolve(''),
-        kkoUrl ? fetch(kkoUrl + bust, { cache: 'no-store' }).then(r => r.text()) : Promise.resolve(''),
+        oyUrl ? fetch(oyUrl + bust, { cache: 'no-store', signal: controller.signal }).then(r => r.text()) : Promise.resolve(''),
+        kkoUrl ? fetch(kkoUrl + bust, { cache: 'no-store', signal: controller.signal }).then(r => r.text()) : Promise.resolve(''),
       ]);
+      clearTimeout(timeout);
       const products = dedupeProducts([
         ...(oyText ? csvToProducts(parseCsv(oyText), 'oysterbay') : []),
         ...(kkoText ? csvToProducts(parseCsv(kkoText), 'kko') : []),
       ]);
-      if (products.length) this.setState({ products });
+      if (products.length) {
+        this.setState({ products, loadingProducts: false });
+        try { localStorage.setItem('ringfresh_order_products_cache', JSON.stringify(products)); } catch (e) {}
+      } else {
+        this.setState((s) => ({ products: s.products.length ? s.products : SAMPLE_PRODUCTS, loadingProducts: false }));
+      }
     } catch (e) {
-      // keep sample fallback
+      this.setState((s) => ({ products: s.products.length ? s.products : SAMPLE_PRODUCTS, loadingProducts: false }));
     }
   }
 
@@ -340,6 +370,8 @@ class Component extends DCLogic {
 
     return {
       categories,
+      loadingProducts: this.state.loadingProducts,
+      loadingTiles: LOADING_TILES,
       basketItems,
       basketEmpty: basketItems.length === 0,
       basketHasItems: basketItems.length > 0,
