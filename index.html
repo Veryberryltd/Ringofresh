@@ -2,6 +2,19 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Ringo Fresh">
+<meta property="og:title" content="Ringo Fresh — Wholesale Fruits & Vegetables in Tanzania">
+<meta property="og:description" content="Wholesale fruits & vegetables in Tanzania. Best pricing, cold chain freshness, and delivery across Tanzania & Zanzibar.">
+<meta property="og:image" content="https://www.ringofresh.co.tz/assets/og-share.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://www.ringofresh.co.tz/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Ringo Fresh — Wholesale Fruits & Vegetables in Tanzania">
+<meta name="twitter:description" content="Wholesale fruits & vegetables in Tanzania. Best pricing, cold chain freshness, and delivery across Tanzania & Zanzibar.">
+<meta name="twitter:image" content="https://www.ringofresh.co.tz/assets/og-share.png">
+
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
 </head>
@@ -119,7 +132,9 @@
         <div style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;">
           <div style="width:100%;aspect-ratio:1;background:{{ item.placeholderBg }};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;">
             <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#8A8371;">photo</span>
-            <img src="{{ item.imageSrc }}" alt="{{ item.product }}" style="position:relative;width:100%;height:100%;object-fit:cover;display:{{ item.imageDisplay }};" />
+            <sc-if value="{{ item.hasPhoto }}" hint-placeholder-val="{{ false }}">
+              <img src="{{ item.imageSrc }}" alt="{{ item.product }}" style="position:relative;width:100%;height:100%;object-fit:cover;" />
+            </sc-if>
           </div>
           <div class="rf-home-tile-body" style="padding:14px 16px 16px;">
             <div class="rf-home-tile-name" style="font-size:15px;color:#241F1A;font-weight:600;">{{ item.product }}</div>
@@ -297,8 +312,8 @@ class Component extends DCLogic {
       product: translateProduct(it.product, lang),
       unit: it.unit,
       priceLabel: it.price > 0 ? it.price.toLocaleString('en-US') + ' TZS' : '—',
-      imageSrc: it.photo || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
-      imageDisplay: it.photo ? 'block' : 'none',
+      imageSrc: it.photo || '',
+      hasPhoto: !!it.photo,
       placeholderBg: PLACEHOLDER_PALETTE[i % PLACEHOLDER_PALETTE.length],
     }));
     return {
