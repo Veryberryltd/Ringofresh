@@ -167,7 +167,7 @@
   <dc-import name="Footer" lang="{{ lang }}" hint-size="100%,360px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=oysterbay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;ordersEndpointUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbwKIDSlWH057xxsB8ipYYtW3Ap6NdK6lcAf_b-8Ng5vf6blmhpc-editclp5NYabihR/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=oysterbay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;ordersEndpointUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbyknVbPRKr4Z2CNP18XVURU3ukN5cF-nKcRAhExQ2ApC3Zw654pZQnh3EQFS5XpEXSt/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
 function parseCsv(text) {
   const rows = [];
   let row = [], field = '', inQuotes = false;
@@ -496,16 +496,29 @@ class Component extends DCLogic {
         const endpoint = this.props.ordersEndpointUrl;
         this.setState({ submitting: true, submitError: false });
         try {
+          let debugMsg = '';
           if (endpoint) {
-            await fetch(endpoint, {
+            const res = await fetch(endpoint, {
               method: 'POST',
               headers: { 'Content-Type': 'text/plain' }, // avoids CORS preflight on Apps Script
               body: JSON.stringify(payload),
             });
+            const text = await res.text().catch(() => '');
+            let parsed = null;
+            try { parsed = JSON.parse(text); } catch (e2) {}
+            if (!res.ok) {
+              debugMsg = `Server responded ${res.status}: ${text.slice(0, 300)}`;
+            } else if (parsed && parsed.ok === false) {
+              debugMsg = `Order saved but something failed: ${parsed.error || 'unknown error'}`;
+            }
+          }
+          if (debugMsg) {
+            this.setState({ submitting: false, submitError: true, submitErrorMessage: debugMsg });
+            return;
           }
           this.setState({ submitting: false, submitted: true });
         } catch (err) {
-          this.setState({ submitting: false, submitError: true, submitErrorMessage: t.sendFailed });
+          this.setState({ submitting: false, submitError: true, submitErrorMessage: `${t.sendFailed} (${err && err.message ? err.message : 'network error'})` });
         }
       },
     };
