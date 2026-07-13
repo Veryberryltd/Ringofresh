@@ -17,7 +17,10 @@
   @media (max-width: 880px) {
     .rf-nav-links { display: none !important; }
     .rf-nav-burger { display: flex !important; margin-left: auto !important; }
-    .rf-nav-mobile-actions { display: flex !important; }
+    .rf-nav-lang-toggle { display: none !important; }
+    .rf-nav-mobile-actions { display: flex !important; position: absolute !important; left: 50% !important; transform: translateX(-50%) !important; margin-left: 0 !important; }
+    .rf-nav-mobile-lang { display: none !important; }
+    .rf-nav-whatsapp { display: none !important; }
     .rf-nav-row { justify-content: flex-start !important; }
   }
 </style>
@@ -37,15 +40,19 @@
       <a href="Contact.dc.html" style="text-decoration:none;padding:4px 0;font-size:17px;letter-spacing:0.2px;font-weight:500;color:{{ contactColor }};border-bottom:{{ contactBorder }};">{{ t.contact }}</a>
     </div>
     <a href="Order.dc.html" class="rf-nav-links" style="flex-shrink:0;text-decoration:none;background:#CB2125;border:1px solid #CB2125;color:#FAF6EE;font-weight:600;font-size:13px;letter-spacing:0.3px;padding:clamp(9px,2vw,11px) clamp(16px,3vw,22px);border-radius:100px;white-space:nowrap;">{{ t.placeOrder }}</a>
-    <div class="rf-nav-mobile-actions" style="display:none;align-items:center;gap:14px;flex-shrink:0;position:absolute;left:50%;transform:translateX(-50%);">
-      <a href="Order.dc.html" style="text-decoration:none;background:#CB2125;color:#FAF6EE;font-weight:600;font-size:15px;letter-spacing:0.2px;padding:12px 20px;border-radius:100px;white-space:nowrap;">{{ t.placeOrder }}</a>
+    <div class="rf-nav-mobile-actions" style="display:none;align-items:center;gap:10px;flex-shrink:0;">
+      <a href="Order.dc.html" style="text-decoration:none;background:#CB2125;color:#FAF6EE;font-weight:600;font-size:12.5px;letter-spacing:0.2px;padding:8px 14px;border-radius:100px;white-space:nowrap;">{{ t.placeOrder }}</a>
+      <div style="display:flex;align-items:center;background:rgba(42,57,125,0.08);border-radius:100px;padding:3px;flex-shrink:0;">
+        <button type="button" onclick="{{ setLangEn }}" style="cursor:pointer;border:0;border-radius:100px;padding:6px 10px;font-size:11.5px;font-weight:700;letter-spacing:0.3px;background:{{ enBg }};color:{{ enColor }};">EN</button>
+        <button type="button" onclick="{{ setLangSw }}" style="cursor:pointer;border:0;border-radius:100px;padding:6px 10px;font-size:11.5px;font-weight:700;letter-spacing:0.3px;background:{{ swBg }};color:{{ swColor }};">SW</button>
+      </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-left:auto;">
-      <div style="display:flex;align-items:center;background:rgba(42,57,125,0.08);border-radius:100px;padding:3px;flex-shrink:0;">
+      <div class="rf-nav-lang-toggle" style="display:flex;align-items:center;background:rgba(42,57,125,0.08);border-radius:100px;padding:3px;flex-shrink:0;">
         <button type="button" onclick="{{ setLangEn }}" style="cursor:pointer;border:0;border-radius:100px;padding:6px 11px;font-size:12.5px;font-weight:700;letter-spacing:0.3px;background:{{ enBg }};color:{{ enColor }};">EN</button>
         <button type="button" onclick="{{ setLangSw }}" style="cursor:pointer;border:0;border-radius:100px;padding:6px 11px;font-size:12.5px;font-weight:700;letter-spacing:0.3px;background:{{ swBg }};color:{{ swColor }};">SW</button>
       </div>
-      <a href="https://wa.me/255795471471" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" style="flex-shrink:0;width:48px;height:48px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;">
+      <a href="https://wa.me/255795471471" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" class="rf-nav-whatsapp" style="flex-shrink:0;width:48px;height:48px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38c1.45.79 3.08 1.21 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91c0-2.65-1.03-5.14-2.9-7.01A9.816 9.816 0 0 0 12.05 2zm0 18.15h-.01c-1.48 0-2.93-.4-4.2-1.15l-.3-.18l-3.12.82l.83-3.04l-.2-.31a8.264 8.264 0 0 1-1.27-4.42c0-4.54 3.7-8.24 8.25-8.24c2.2 0 4.27.86 5.83 2.42a8.184 8.184 0 0 1 2.41 5.83c0 4.55-3.7 8.25-8.25 8.25zm4.52-6.18c-.25-.12-1.47-.72-1.69-.81c-.23-.08-.39-.12-.56.13c-.17.24-.64.81-.78.97c-.14.17-.29.19-.53.06c-.25-.12-1.04-.38-1.98-1.22c-.73-.65-1.23-1.46-1.37-1.7c-.14-.25-.02-.38.11-.51c.11-.11.25-.29.37-.43c.13-.14.17-.24.25-.4c.08-.17.04-.31-.02-.43c-.06-.12-.56-1.35-.77-1.85c-.2-.48-.41-.42-.56-.43c-.14-.01-.31-.01-.48-.01c-.17 0-.43.06-.66.31c-.22.24-.87.85-.87 2.07c0 1.22.89 2.4 1.01 2.57c.13.17 1.76 2.69 4.27 3.77c.6.26 1.06.41 1.43.53c.6.19 1.14.16 1.57.1c.48-.07 1.47-.6 1.68-1.18c.21-.58.21-1.07.14-1.18c-.06-.11-.23-.17-.48-.29z"></path></svg>
       </a>
       <button type="button" class="rf-nav-burger" onclick="{{ toggleMenu }}" aria-label="Menu" style="display:none;flex-shrink:0;width:44px;height:44px;border-radius:10px;border:1px solid rgba(36,31,26,0.14);background:#FFFFFF;align-items:center;justify-content:center;cursor:pointer;flex-direction:column;gap:5px;">
@@ -57,6 +64,10 @@
   </div>
   <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
     <div style="padding:8px clamp(16px,4vw,40px) 20px;display:flex;flex-direction:column;gap:4px;border-top:1px solid rgba(36,31,26,0.08);">
+      <div class="rf-nav-mobile-lang" style="display:none;align-items:center;background:rgba(42,57,125,0.08);border-radius:100px;padding:3px;width:fit-content;margin-bottom:8px;">
+        <button type="button" onclick="{{ setLangEn }}" style="cursor:pointer;border:0;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:700;letter-spacing:0.3px;background:{{ enBg }};color:{{ enColor }};">EN</button>
+        <button type="button" onclick="{{ setLangSw }}" style="cursor:pointer;border:0;border-radius:100px;padding:8px 16px;font-size:13px;font-weight:700;letter-spacing:0.3px;background:{{ swBg }};color:{{ swColor }};">SW</button>
+      </div>
       <a href="Home.dc.html" style="text-decoration:none;padding:12px 4px;font-size:15px;font-weight:500;color:{{ homeColor }};">{{ t.home }}</a>
       <a href="About.dc.html" style="text-decoration:none;padding:12px 4px;font-size:15px;font-weight:500;color:{{ aboutColor }};">{{ t.about }}</a>
       <a href="Facilities.dc.html" style="text-decoration:none;padding:12px 4px;font-size:15px;font-weight:500;color:{{ facilitiesColor }};">{{ t.facilities }}</a>
