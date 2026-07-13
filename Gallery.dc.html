@@ -2,19 +2,6 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Ringo Fresh">
-<meta property="og:title" content="Gallery — Ringo Fresh">
-<meta property="og:description" content="Wholesale fruits & vegetables in Tanzania. Best pricing, cold chain freshness, and delivery across Tanzania & Zanzibar.">
-<meta property="og:image" content="https://www.ringofresh.co.tz/assets/og-share.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://www.ringofresh.co.tz/">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Gallery — Ringo Fresh">
-<meta name="twitter:description" content="Wholesale fruits & vegetables in Tanzania. Best pricing, cold chain freshness, and delivery across Tanzania & Zanzibar.">
-<meta name="twitter:image" content="https://www.ringofresh.co.tz/assets/og-share.png">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
 </head>
@@ -28,12 +15,12 @@
 <script src="image-slot.js"></script>
 </helmet>
 <div style="background:#FAFAFA;font-family:'Manrope',sans-serif;color:#241F1A;">
-  <dc-import name="Nav" active="gallery" hint-size="100%,96px"></dc-import>
+  <dc-import name="Nav" active="gallery" lang="{{ lang }}" on-set-lang="{{ setLang }}" hint-size="100%,96px"></dc-import>
 
   <section style="max-width:1320px;margin:0 auto;padding:64px 40px 56px;">
-    <div style="font-size:12.5px;letter-spacing:3px;text-transform:uppercase;color:#CB2125;font-weight:600;margin-bottom:24px;">Gallery</div>
-    <h1 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:clamp(34px,6vw,56px);line-height:1.14;margin:0 0 28px;color:#2A397D;max-width:840px;letter-spacing:-0.5px;">Our produce, in real photos.</h1>
-    <p style="font-size:18px;line-height:1.8;font-weight:300;color:#4A4438;max-width:640px;margin:0;">A closer look at the fruits and vegetables we supply. Drag your own product photos onto any tile below to fill it in.</p>
+    <div style="font-size:12.5px;letter-spacing:3px;text-transform:uppercase;color:#CB2125;font-weight:600;margin-bottom:24px;">{{ t.kicker }}</div>
+    <h1 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:clamp(34px,6vw,56px);line-height:1.14;margin:0 0 28px;color:#2A397D;max-width:840px;letter-spacing:-0.5px;">{{ t.title }}</h1>
+    <p style="font-size:18px;line-height:1.8;font-weight:300;color:#4A4438;max-width:640px;margin:0;">{{ t.intro }}</p>
   </section>
 
   <section style="max-width:1320px;margin:0 auto;padding:0 40px 130px;">
@@ -48,12 +35,30 @@
     </div>
   </section>
 
-  <dc-import name="Footer" hint-size="100%,360px"></dc-import>
+  <dc-import name="Footer" lang="{{ lang }}" hint-size="100%,360px"></dc-import>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{}">
+const STRINGS = {
+  en: {
+    kicker: 'Gallery',
+    title: 'Our produce, in real photos.',
+    intro: 'A closer look at the fruits and vegetables we supply. Drag your own product photos onto any tile below to fill it in.',
+    dropPlaceholder: 'Drop a photo',
+  },
+  sw: {
+    kicker: 'Picha',
+    title: 'Bidhaa zetu, kwa picha halisi.',
+    intro: 'Angalia kwa karibu matunda na mboga tunazosambaza. Buruta picha zako za bidhaa kwenye kisanduku chochote hapa chini ili kukijaza.',
+    dropPlaceholder: 'Weka picha hapa',
+  },
+};
+
 class Component extends DCLogic {
+  state = { lang: (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ringfresh_lang')) || 'en' };
   renderVals() {
+    const lang = this.state.lang;
+    const t = STRINGS[lang] || STRINGS.en;
     const ids = [
       1347,1348,1349,1352,1353,1360,1361,1370,1371,1372,1390,1391,1392,1393,1394,
       1402,1403,1404,1405,1406,1407,1409,1420,1421,1427,1437,1438,1439,1440,1441,
@@ -64,9 +69,9 @@ class Component extends DCLogic {
     const slots = photos.map((src, i) => ({
       id: 'gallery-product-' + i,
       src,
-      placeholder: 'Drop a photo',
+      placeholder: t.dropPlaceholder,
     }));
-    return { slots };
+    return { t, lang, setLang: (l) => { this.setState({ lang: l }); try { sessionStorage.setItem('ringfresh_lang', l); } catch (e) {} }, slots };
   }
 }
 </script>

@@ -2,19 +2,6 @@
 <html>
 <head>
 <meta charset="utf-8">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Ringo Fresh">
-<meta property="og:title" content="Price List — Ringo Fresh">
-<meta property="og:description" content="Wholesale fruits & vegetables in Tanzania. Best pricing, cold chain freshness, and delivery across Tanzania & Zanzibar.">
-<meta property="og:image" content="https://www.ringofresh.co.tz/assets/og-share.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://www.ringofresh.co.tz/">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Price List — Ringo Fresh">
-<meta name="twitter:description" content="Wholesale fruits & vegetables in Tanzania. Best pricing, cold chain freshness, and delivery across Tanzania & Zanzibar.">
-<meta name="twitter:image" content="https://www.ringofresh.co.tz/assets/og-share.png">
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
 </head>
@@ -57,30 +44,30 @@
 </helmet>
 <div style="background:#FAFAFA;font-family:'Work Sans',sans-serif;color:#241F1A;">
   <div class="rf-print-hide">
-  <dc-import name="Nav" active="pricelist" hint-size="100%,96px"></dc-import>
+  <dc-import name="Nav" active="pricelist" lang="{{ lang }}" on-set-lang="{{ setLang }}" hint-size="100%,96px"></dc-import>
   </div>
 
   <section class="rf-print-hide" style="max-width:1320px;margin:0 auto;padding:64px 40px 16px;">
-    <div style="font-size:12.5px;letter-spacing:3px;text-transform:uppercase;color:#CB2125;font-weight:600;margin-bottom:14px;">Wholesale Price List</div>
+    <div style="font-size:12.5px;letter-spacing:3px;text-transform:uppercase;color:#CB2125;font-weight:600;margin-bottom:14px;">{{ t.kicker }}</div>
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:24px;">
       <div>
-        <h1 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:clamp(26px,5vw,36px);line-height:1.15;margin:0 0 10px;color:#2A397D;max-width:660px;letter-spacing:-0.4px;">Live current pricing.</h1>
+        <h1 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:clamp(26px,5vw,36px);line-height:1.15;margin:0 0 10px;color:#2A397D;max-width:660px;letter-spacing:-0.4px;">{{ t.title }}</h1>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
         <div style="display:flex;gap:14px;">
-          <a href="Order.dc.html" style="text-decoration:none;cursor:pointer;background:#CB2125;color:#FAFAFA;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">Place an Order</a>
-          <button onclick="{{ downloadPdf }}" style="cursor:pointer;background:#2A397D;color:#FAFAFA;border:none;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">Download PDF</button>
+          <a href="Order.dc.html" style="text-decoration:none;cursor:pointer;background:#CB2125;color:#FAFAFA;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">{{ t.placeOrder }}</a>
+          <button onclick="{{ downloadPdf }}" style="cursor:pointer;background:#2A397D;color:#FAFAFA;border:none;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">{{ t.downloadPdf }}</button>
         </div>
       </div>
     </div>
     <div style="margin-top:16px;display:flex;gap:24px;flex-wrap:wrap;font-size:12.5px;font-weight:300;color:#6B6455;">
-      <span>Last updated: <strong style="color:#2A397D;">{{ lastUpdatedLabel }}</strong></span>
-      <span>Last checked: <strong style="color:#2A397D;">{{ lastCheckedLabel }}</strong></span>
+      <span>{{ t.lastUpdated }}: <strong style="color:#2A397D;">{{ lastUpdatedLabel }}</strong></span>
+      <span>{{ t.lastChecked }}: <strong style="color:#2A397D;">{{ lastCheckedLabel }}</strong></span>
       <sc-if value="{{ showFallbackNotice }}" hint-placeholder-val="{{ false }}">
         <span style="font-family:monospace;color:#B8781A;">[ showing sample data — connect your Google Sheet in Tweaks ]</span>
       </sc-if>
       <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
-        <span style="color:#CB2125;">Couldn't reach the sheet — showing last known prices.</span>
+        <span style="color:#CB2125;">{{ t.errorNotice }}</span>
       </sc-if>
     </div>
   </section>
@@ -93,8 +80,8 @@
           <img src="assets/eatwell-logo.svg" alt="Eat Well" class="rf-print-only" style="display:none;height:28px;width:auto;" />
         </div>
         <div style="text-align:right;">
-          <div class="rf-price-header-title" style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:18px;color:#2A397D;">Wholesale Price List</div>
-          <div style="font-size:11.5px;font-weight:300;color:#8A8371;margin-top:2px;">Downloaded: {{ downloadedLabel }} · Updated: {{ lastUpdatedLabel }}</div>
+          <div class="rf-price-header-title" style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:18px;color:#2A397D;">{{ t.kicker }}</div>
+          <div style="font-size:11.5px;font-weight:300;color:#8A8371;margin-top:2px;">{{ t.downloaded }}: {{ downloadedLabel }} · {{ t.updated }}: {{ lastUpdatedLabel }}</div>
         </div>
       </div>
       <div style="height:1px;background:#EAE2D3;margin:18px 0 4px;"></div>
@@ -119,7 +106,7 @@
                   <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:#8A8371;">photo</span>
                   <img src="{{ row.imageSrc }}" alt="{{ row.product }}" loading="lazy" decoding="async" data-fallback="{{ row.imageFallback }}" onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" style="position:relative;width:100%;height:100%;object-fit:cover;object-position:{{ row.imagePosition }};transform:scale({{ row.imageScale }});display:{{ row.imageDisplay }};" />
                   <sc-if value="{{ row.outOfStock }}" hint-placeholder-val="{{ false }}">
-                    <span style="position:absolute;top:8px;left:8px;background:#241F1A;color:#FFFFFF;font-size:9.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;">Out of stock</span>
+                    <span style="position:absolute;top:8px;left:8px;background:#241F1A;color:#FFFFFF;font-size:9.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;">{{ t.outOfStock }}</span>
                   </sc-if>
                 </div>
                 <div class="rf-tile-body" style="padding:10px 12px 12px;">
@@ -134,8 +121,8 @@
       </sc-for>
 
       <div style="margin-top:20px;padding-top:12px;border-top:1px solid #EAE2D3;display:flex;justify-content:space-between;font-size:11px;color:#9B8F76;">
-        <span>Ringo Fresh Co. Ltd · Wholesale Fruits &amp; Vegetables · Tanzania &amp; Zanzibar</span>
-        <span>Prices subject to change without notice</span>
+        <span>Ringo Fresh · {{ t.footerLine }}</span>
+        <span>{{ t.priceNotice }}</span>
       </div>
     </div>
   </section>
@@ -173,7 +160,7 @@
   </section>
 
   <div class="rf-print-hide">
-  <dc-import name="Footer" hint-size="100%,360px"></dc-import>
+  <dc-import name="Footer" lang="{{ lang }}" hint-size="100%,360px"></dc-import>
   </div>
 </div>
 </x-dc>
@@ -186,6 +173,47 @@ const IMAGE_POSITION_OVERRIDES = {
 };
 const IMAGE_SCALE_OVERRIDES = {
   'Red Grapes': 1.6,
+};
+
+// Best-effort Swahili translations for product/category names coming from the
+// live sheet. Unmatched names fall back to the original (English) text.
+const PRODUCT_SW = {
+  'Mango': 'Embe', 'Banana': 'Ndizi', 'Tomato': 'Nyanya', 'Cabbage': 'Kabichi',
+  'Orange': 'Chungwa', 'Onion': 'Kitunguu', 'Apple': 'Tofaa', 'Red Grapes': 'Zabibu Nyekundu',
+  'Green Grapes': 'Zabibu za Kijani', 'Grapefruit': 'Balungi', 'Grapefruit Star Ruby': 'Balungi Star Ruby',
+  'Lemon': 'Ndimu', 'Lime': 'Limau', 'Tangerine': 'Chenza', 'Pineapple': 'Nanasi',
+  'Watermelon': 'Tikitimaji', 'Papaya': 'Papai', 'Avocado': 'Parachichi',
+  'Strawberry': 'Sitroberi', 'Blueberry': 'Bluberi', 'Potato': 'Kiazi', 'Carrot': 'Karoti',
+  'Garlic': 'Kitunguu Saumu', 'Ginger': 'Tangawizi', 'Cucumber': 'Tango',
+  'Capsicum': 'Pilipili Hoho', 'Spinach': 'Mchicha', 'Green Beans': 'Maharagwe Machanga',
+};
+const CATEGORY_SW = {
+  'Fruits': 'Matunda', 'Vegetables': 'Mboga', 'Citrus': 'Machungwa',
+  'Roots & Tubers': 'Mizizi', 'Berries': 'Matunda Madogo', 'Apples': 'Matofaa',
+  'Grapes': 'Zabibu', 'Tropical & Exotic': 'Matunda ya Kitropiki', 'Other': 'Nyingine',
+};
+function translateProduct(name, lang) { return lang === 'sw' ? (PRODUCT_SW[name] || name) : name; }
+function translateCategory(name, lang) { return lang === 'sw' ? (CATEGORY_SW[name] || name) : name; }
+
+const STRINGS = {
+  en: {
+    kicker: 'Wholesale Price List', title: 'Live current pricing.',
+    placeOrder: 'Place an Order', downloadPdf: 'Download PDF',
+    lastUpdated: 'Last updated', lastChecked: 'Last checked',
+    errorNotice: "Couldn't reach the sheet — showing last known prices.",
+    downloaded: 'Downloaded', updated: 'Updated', outOfStock: 'Out of stock',
+    footerLine: 'Wholesale Fruits & Vegetables · Tanzania & Zanzibar',
+    priceNotice: 'Prices subject to change without notice',
+  },
+  sw: {
+    kicker: 'Orodha ya Bei za Jumla', title: 'Bei za sasa moja kwa moja.',
+    placeOrder: 'Weka Oda', downloadPdf: 'Pakua PDF',
+    lastUpdated: 'Ilisasishwa mwisho', lastChecked: 'Ilikaguliwa mwisho',
+    errorNotice: 'Imeshindwa kufikia laha — inaonyesha bei za mwisho zinazojulikana.',
+    downloaded: 'Imepakuliwa', updated: 'Imesasishwa', outOfStock: 'Hakuna bidhaa',
+    footerLine: 'Jumla ya Matunda na Mboga · Tanzania na Zanzibar',
+    priceNotice: 'Bei zinaweza kubadilika bila taarifa',
+  },
 };
 // Instagram export card photos: per-product zoom/crop tuning. Default is
 // background-size:contain (shows the whole product). Add an entry here to
@@ -321,7 +349,7 @@ function dedupeItems(items) {
   return Array.from(byKey.values());
 }
 
-function buildCategories(locations) {
+function buildCategories(locations, lang) {
   // Merge all internal stock locations into one customer-facing list — the
   // Oysterbay/KKO split is for staff fulfilment only and never shown here.
   const merged = Object.keys(locations || {}).reduce((all, key) => all.concat(locations[key] || []), []);
@@ -334,8 +362,8 @@ function buildCategories(locations) {
     const priceNum = Number(item.price) || 0;
     const inStock = item.inStock !== false;
     byCat[cat].push({
-      product: item.product, unit: item.unit,
-      priceLabel: inStock ? (priceNum > 0 ? priceNum.toLocaleString('en-US') + ' TZS' : '—') : 'Out of stock',
+      product: translateProduct(item.product, lang), unit: item.unit,
+      priceLabel: inStock ? (priceNum > 0 ? priceNum.toLocaleString('en-US') + ' TZS' : '—') : (lang === 'sw' ? 'Hakuna bidhaa' : 'Out of stock'),
       image: item.photo || null,
       imageSrc: item.photo || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
       imageFallback: item.photoFallback || '',
@@ -350,7 +378,7 @@ function buildCategories(locations) {
       placeholderBg: PLACEHOLDER_PALETTE[byCat[cat].length % PLACEHOLDER_PALETTE.length],
     });
   });
-  return Object.keys(byCat).map(name => ({ name, rows: byCat[name] }));
+  return Object.keys(byCat).map(name => ({ name: translateCategory(name, lang), rows: byCat[name] }));
 }
 
 class Component extends DCLogic {
@@ -367,6 +395,7 @@ class Component extends DCLogic {
     unlocked: false,
     passwordInput: '',
     passwordError: false,
+    lang: (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ringfresh_lang')) || 'en',
   };
 
   // Placeholder staff passcode — swap for something your team will remember,
@@ -577,9 +606,13 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const categories = buildCategories(this.state.locations);
+    const lang = this.state.lang;
+    const t = STRINGS[lang] || STRINGS.en;
+    const categories = buildCategories(this.state.locations, lang);
     const now = new Date();
     return {
+      t, lang,
+      setLang: (l) => { this.setState({ lang: l }); try { sessionStorage.setItem('ringfresh_lang', l); } catch (e) {} },
       categories,
       loadingSheet: this.state.loadingSheet,
       loadingTiles: LOADING_TILES,
