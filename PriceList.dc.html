@@ -12,6 +12,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
 <link rel="preconnect" href="https://docs.google.com">
 <link rel="dns-prefetch" href="https://docs.google.com">
+<link rel="preconnect" href="https://images.weserv.nl">
+<link rel="dns-prefetch" href="https://images.weserv.nl">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
@@ -279,7 +281,10 @@ function driveLinkToDirectUrl(link) {
   const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
   for (const p of patterns) {
     const m = link.match(p);
-    if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w500';
+    if (m) {
+      const driveUrl = 'drive.google.com/thumbnail?id=' + m[1] + '&sz=w500';
+      return 'https://images.weserv.nl/?url=' + encodeURIComponent(driveUrl) + '&w=340&q=72&output=webp';
+    }
   }
   return link;
 }
@@ -288,7 +293,7 @@ function driveLinkToFallbackUrl(link) {
   const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
   for (const p of patterns) {
     const m = link.match(p);
-    if (m) return 'https://lh3.googleusercontent.com/d/' + m[1] + '=w1000';
+    if (m) return 'https://lh3.googleusercontent.com/d/' + m[1] + '=w500';
   }
   return '';
 }

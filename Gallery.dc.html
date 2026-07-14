@@ -28,7 +28,10 @@
   body{margin:0;background:#FAFAFA;}
   #gallery-carousel{display:none;}
   #gallery-carousel::-webkit-scrollbar{display:none;}
+  #gallery-carousel image-slot::part(image){touch-action:pan-y pan-x;}
+  #gallery-carousel image-slot{touch-action:pan-y pan-x;}
   @media (max-width: 780px) {
+    #gallery-grid-section{padding:0 !important;}
     #gallery-grid{display:none !important;}
     #gallery-carousel{display:flex !important;}
   }
@@ -44,7 +47,7 @@
     <p style="font-size:18px;line-height:1.8;font-weight:300;color:#4A4438;max-width:640px;margin:0;">{{ t.intro }}</p>
   </section>
 
-  <section style="max-width:1320px;margin:0 auto;padding:0 40px 130px;">
+  <section id="gallery-grid-section" style="max-width:1320px;margin:0 auto;padding:0 40px 130px;">
     <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;">
       <sc-for list="{{ slots }}" as="s" hint-placeholder-count="60">
         <div style="border-radius:8px;overflow:hidden;background:#FFFFFF;border:1px solid #EFE9DC;">
@@ -56,18 +59,23 @@
     </div>
   </section>
 
-  <section style="padding:0 0 96px;">
-    <div id="gallery-carousel" style="overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;gap:14px;padding:0 40px;">
-      <sc-for list="{{ slots }}" as="s" hint-placeholder-count="60">
-        <div style="flex:0 0 72vw;max-width:340px;scroll-snap-align:start;border-radius:8px;overflow:hidden;background:#FFFFFF;border:1px solid #EFE9DC;">
-          <div style="width:100%;aspect-ratio:1;">
-            <image-slot id="{{ s.mobileId }}" src="{{ s.src }}" placeholder="{{ s.placeholder }}" shape="rect"></image-slot>
+  <section style="padding:32px 0 96px;">
+    <div style="max-width:460px;margin:0 auto;">
+      <div id="gallery-carousel" ref="{{ carouselRef }}" onscroll="{{ handleScroll }}" style="overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;">
+        <sc-for list="{{ slots }}" as="s" hint-placeholder-count="60">
+          <div style="flex:0 0 100%;scroll-snap-align:start;border-radius:8px;overflow:hidden;background:#FFFFFF;border:1px solid #EFE9DC;">
+            <div style="width:100%;aspect-ratio:1;">
+              <image-slot id="{{ s.mobileId }}" src="{{ s.src }}" placeholder="{{ s.placeholder }}" shape="rect"></image-slot>
+            </div>
           </div>
-        </div>
-      </sc-for>
-      <div style="flex:0 0 26px;"></div>
+        </sc-for>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:20px;margin-top:20px;">
+        <button type="button" aria-label="Previous photo" onclick="{{ goPrev }}" style="cursor:pointer;width:44px;height:44px;border-radius:50%;border:1px solid #E2D9C8;background:#FFFFFF;color:#2A397D;font-size:18px;line-height:1;">‹</button>
+        <span style="font-size:13px;color:#8A8371;font-weight:600;min-width:56px;text-align:center;">{{ counterLabel }}</span>
+        <button type="button" aria-label="Next photo" onclick="{{ goNext }}" style="cursor:pointer;width:44px;height:44px;border-radius:50%;border:1px solid #E2D9C8;background:#FFFFFF;color:#2A397D;font-size:18px;line-height:1;">›</button>
+      </div>
     </div>
-    <div style="text-align:center;font-size:12.5px;color:#9A9282;font-weight:500;margin-top:14px;letter-spacing:0.3px;">{{ t.swipeHint }}</div>
   </section>
 
   <dc-import name="Footer" lang="{{ lang }}" hint-size="100%,360px"></dc-import>
@@ -92,7 +100,18 @@ const STRINGS = {
 };
 
 class Component extends DCLogic {
-  state = { lang: (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ringfresh_lang')) || 'en' };
+  state = {
+    lang: (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('ringfresh_lang')) || 'en',
+    activeIndex: 0,
+  };
+  carouselRef = { current: null };
+
+  scrollToIndex(i) {
+    const el = this.carouselRef.current;
+    if (!el) return;
+    el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
+  }
+
   renderVals() {
     const lang = this.state.lang;
     const t = STRINGS[lang] || STRINGS.en;
@@ -112,7 +131,23 @@ class Component extends DCLogic {
       src,
       placeholder: t.dropPlaceholder,
     }));
-    return { t, lang, setLang: (l) => { this.setState({ lang: l }); try { sessionStorage.setItem('ringfresh_lang', l); } catch (e) {} }, slots };
+    const total = slots.length;
+    const activeIndex = Math.min(this.state.activeIndex, total - 1);
+    return {
+      t, lang,
+      setLang: (l) => { this.setState({ lang: l }); try { sessionStorage.setItem('ringfresh_lang', l); } catch (e) {} },
+      slots,
+      carouselRef: this.carouselRef,
+      counterLabel: (activeIndex + 1) + ' / ' + total,
+      goPrev: () => { const i = Math.max(0, activeIndex - 1); this.setState({ activeIndex: i }); this.scrollToIndex(i); },
+      goNext: () => { const i = Math.min(total - 1, activeIndex + 1); this.setState({ activeIndex: i }); this.scrollToIndex(i); },
+      handleScroll: (e) => {
+        const el = e.target;
+        if (!el.clientWidth) return;
+        const i = Math.round(el.scrollLeft / el.clientWidth);
+        if (i !== this.state.activeIndex) this.setState({ activeIndex: i });
+      },
+    };
   }
 }
 </script>
