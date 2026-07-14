@@ -279,7 +279,7 @@ function driveLinkToDirectUrl(link) {
   const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
   for (const p of patterns) {
     const m = link.match(p);
-    if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w1000';
+    if (m) return 'https://drive.google.com/thumbnail?id=' + m[1] + '&sz=w500';
   }
   return link;
 }
@@ -430,7 +430,7 @@ class Component extends DCLogic {
       // to show up here even with cache:'no-store'.
       const bust = '&t=' + Date.now();
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 6000);
+      const timeout = setTimeout(() => controller.abort(), 15000);
       const oyText = await fetch(oyUrl + bust, { cache: 'no-store', signal: controller.signal }).then(r => r.text());
       clearTimeout(timeout);
       const locations = {
