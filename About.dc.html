@@ -37,8 +37,8 @@
 
   <section style="max-width:1320px;margin:0 auto;padding:0 40px 130px;">
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:56px;align-items:center;">
-      <div style="height:420px;border-radius:8px;background:repeating-linear-gradient(115deg,#DCE1F5,#DCE1F5 24px,#C9D0EE 24px,#C9D0EE 48px);display:flex;align-items:center;justify-content:center;">
-        <span style="font-family:monospace;font-size:12px;color:#2A397D;">[ team / warehouse photo ]</span>
+      <div style="height:420px;border-radius:8px;overflow:hidden;">
+        <img src="assets/why-we-exist-apples.jpg" alt="Crates of fresh apples ready for wholesale distribution" style="width:100%;height:100%;object-fit:cover;" />
       </div>
       <div>
         <h2 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:32px;color:#2A397D;margin:0 0 22px;letter-spacing:-0.3px;">{{ t.whyTitle }}</h2>
@@ -52,13 +52,13 @@
     <div style="max-width:1320px;margin:0 auto;">
       <div style="font-size:12.5px;letter-spacing:3px;text-transform:uppercase;color:#CB2125;font-weight:600;margin-bottom:22px;text-align:center;">{{ t.operateKicker }}</div>
       <h2 style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:38px;color:#2A397D;text-align:center;margin:0 0 72px;letter-spacing:-0.3px;">{{ t.operateTitle }}</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:48px;">
-        <div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;">
+        <div style="padding:44px 40px;border:1px solid rgba(42,57,125,0.14);border-radius:12px;background:#FFFFFF;">
           <div style="font-family:'Libre Caslon Text',serif;font-size:15px;color:#CB2125;margin-bottom:22px;">A</div>
           <h3 style="font-size:22px;font-weight:600;color:#2A397D;margin:0 0 14px;">{{ t.headOfficeTitle }}</h3>
           <p style="font-size:15.5px;line-height:1.8;font-weight:300;color:#6B6455;margin:0;">{{ t.headOfficeBody }}</p>
         </div>
-        <div>
+        <div style="padding:44px 40px;border:1px solid rgba(42,57,125,0.14);border-radius:12px;background:#FFFFFF;">
           <div style="font-family:'Libre Caslon Text',serif;font-size:15px;color:#CB2125;margin-bottom:22px;">B</div>
           <h3 style="font-size:22px;font-weight:600;color:#2A397D;margin:0 0 14px;">{{ t.salesOfficeTitle }}</h3>
           <p style="font-size:15.5px;line-height:1.8;font-weight:300;color:#6B6455;margin:0;">{{ t.salesOfficeBody }}</p>
@@ -67,22 +67,26 @@
     </div>
   </section>
 
-  <section style="max-width:1320px;margin:0 auto;padding:110px 40px;">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:32px;">
-      <div style="text-align:center;">
-        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:26px;color:#2A397D;margin-bottom:12px;">{{ t.importTitle }}</div>
+  <section style="max-width:1320px;margin:0 auto;padding:88px 40px;">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;">
+      <div style="text-align:center;padding:36px 24px;border:1px solid rgba(42,57,125,0.14);border-radius:12px;background:#FFFFFF;">
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:13px;color:#CB2125;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">01</div>
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:24px;color:#2A397D;margin-bottom:12px;">{{ t.importTitle }}</div>
         <p style="font-size:14px;font-weight:300;color:#6B6455;margin:0;">{{ t.importBody }}</p>
       </div>
-      <div style="text-align:center;">
-        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:26px;color:#2A397D;margin-bottom:12px;">{{ t.packTitle }}</div>
+      <div style="text-align:center;padding:36px 24px;border:1px solid rgba(42,57,125,0.14);border-radius:12px;background:#FFFFFF;">
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:13px;color:#CB2125;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">02</div>
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:24px;color:#2A397D;margin-bottom:12px;">{{ t.packTitle }}</div>
         <p style="font-size:14px;font-weight:300;color:#6B6455;margin:0;">{{ t.packBody }}</p>
       </div>
-      <div style="text-align:center;">
-        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:26px;color:#2A397D;margin-bottom:12px;">{{ t.storeTitle }}</div>
+      <div style="text-align:center;padding:36px 24px;border:1px solid rgba(42,57,125,0.14);border-radius:12px;background:#FFFFFF;">
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:13px;color:#CB2125;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">03</div>
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:24px;color:#2A397D;margin-bottom:12px;">{{ t.storeTitle }}</div>
         <p style="font-size:14px;font-weight:300;color:#6B6455;margin:0;">{{ t.storeBody }}</p>
       </div>
-      <div style="text-align:center;">
-        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:26px;color:#2A397D;margin-bottom:12px;">{{ t.deliverTitle }}</div>
+      <div style="text-align:center;padding:36px 24px;border:1px solid rgba(42,57,125,0.14);border-radius:12px;background:#FFFFFF;">
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:13px;color:#CB2125;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">04</div>
+        <div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:24px;color:#2A397D;margin-bottom:12px;">{{ t.deliverTitle }}</div>
         <p style="font-size:14px;font-weight:300;color:#6B6455;margin:0;">{{ t.deliverBody }}</p>
       </div>
     </div>
@@ -96,9 +100,9 @@ const STRINGS = {
   en: {
     kicker: 'About Ringo Fresh',
     title: 'Built as a wholesale operation, from import to delivery.',
-    intro: 'Ringo Fresh runs as a dedicated wholesale division for fruits and vegetables across Tanzania and Zanzibar. We keep the chain — import, packaging, cold storage and distribution — under one roof so we can hold prices down for customers without cutting corners on freshness.',
+    intro: 'Ringo Fresh runs as a dedicated wholesale division for fruits and vegetables across Tanzania and Zanzibar. We keep the chain (import, packaging, cold storage and distribution) under one roof so we can hold prices down for customers without cutting corners on freshness.',
     whyTitle: 'Why we exist',
-    whyBody1: "Markets, retailers and distributors across Tanzania and Zanzibar need consistent supply at a price that lets them stay competitive. Buying direct from scattered growers doesn't guarantee either. Ringo Fresh was set up to solve both problems at once — as a single wholesale supplier holding volume, quality and price steady.",
+    whyBody1: "Markets, retailers and distributors across Tanzania and Zanzibar need consistent supply at a price that lets them stay competitive. Buying direct from scattered growers doesn't guarantee either. Ringo Fresh was set up to solve both problems at once, as a single wholesale supplier holding volume, quality and price steady.",
     whyBody2: 'Every order moves through the same disciplined chain: imported or sourced at scale, sorted and packaged at our pack house, held in cold storage, then shipped or delivered anywhere in Tanzania or Zanzibar.',
     operateKicker: 'How we operate', operateTitle: 'Two offices, one supply chain',
     headOfficeTitle: 'Head Office', headOfficeBody: 'Oversees import, pack house operations, cold-chain storage and company-wide wholesale pricing.',
@@ -111,9 +115,9 @@ const STRINGS = {
   sw: {
     kicker: 'Kuhusu Ringo Fresh',
     title: 'Tulijengwa kama kampuni ya jumla, kuanzia uagizaji hadi usambazaji.',
-    intro: 'Ringo Fresh ni kitengo maalum cha jumla cha matunda na mboga kote Tanzania na Zanzibar. Tunashikilia mnyororo mzima — uagizaji, ufungashaji, uhifadhi baridi na usambazaji — chini ya paa moja ili tuweze kupunguza bei kwa wateja bila kuathiri ubichi.',
+    intro: 'Ringo Fresh ni kitengo maalum cha jumla cha matunda na mboga kote Tanzania na Zanzibar. Tunashikilia mnyororo mzima (uagizaji, ufungashaji, uhifadhi baridi na usambazaji) chini ya paa moja ili tuweze kupunguza bei kwa wateja bila kuathiri ubichi.',
     whyTitle: 'Kwa nini tupo',
-    whyBody1: 'Masoko, wauzaji reja reja na wasambazaji kote Tanzania na Zanzibar wanahitaji ugavi thabiti kwa bei inayowawezesha kushindana. Kununua moja kwa moja kutoka kwa wakulima waliotawanyika hakuhakikishi jambo lolote kati ya hayo. Ringo Fresh ilianzishwa kutatua matatizo yote mawili kwa wakati mmoja — kama muuzaji mmoja wa jumla anayeshikilia kiasi, ubora na bei kwa uthabiti.',
+    whyBody1: 'Masoko, wauzaji reja reja na wasambazaji kote Tanzania na Zanzibar wanahitaji ugavi thabiti kwa bei inayowawezesha kushindana. Kununua moja kwa moja kutoka kwa wakulima waliotawanyika hakuhakikishi jambo lolote kati ya hayo. Ringo Fresh ilianzishwa kutatua matatizo yote mawili kwa wakati mmoja, kama muuzaji mmoja wa jumla anayeshikilia kiasi, ubora na bei kwa uthabiti.',
     whyBody2: 'Kila oda hupitia mnyororo ule ule wenye nidhamu: kuagizwa au kupatikana kwa kiasi kikubwa, kupangwa na kufungashwa kwenye kiwanda chetu cha ufungashaji, kuhifadhiwa kwenye baridi, kisha kusafirishwa au kupelekwa popote Tanzania au Zanzibar.',
     operateKicker: 'Jinsi tunavyofanya kazi', operateTitle: 'Ofisi mbili, mnyororo mmoja wa ugavi',
     headOfficeTitle: 'Ofisi Kuu', headOfficeBody: 'Inasimamia uagizaji, shughuli za kiwanda cha ufungashaji, uhifadhi wa mnyororo baridi na bei za jumla kampuni nzima.',

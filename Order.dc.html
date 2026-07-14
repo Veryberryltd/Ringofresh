@@ -100,13 +100,21 @@
           <div style="background:#FFFFFF;border:1px solid #EFE9DC;border-radius:12px;padding:8px 20px;">
             <sc-for list="{{ basketItems }}" as="b" hint-placeholder-count="3">
               <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #F2EEE4;">
-                <span style="font-size:14.5px;color:#241F1A;">{{ b.name }} <span style="color:#9B8F76;font-size:12.5px;">— {{ b.unit }}</span></span>
+                <span style="font-size:14.5px;color:#241F1A;">{{ b.name }} <span style="color:#9B8F76;font-size:12.5px;">· {{ b.unit }}</span></span>
                 <div style="display:flex;align-items:center;gap:14px;">
                   <span style="font-size:14px;font-weight:600;color:#2A397D;">×{{ b.qty }}</span>
+                  <span style="font-size:13.5px;font-weight:600;color:#241F1A;min-width:90px;text-align:right;">{{ b.subtotalLabel }}</span>
                   <button type="button" onclick="{{ b.remove }}" style="cursor:pointer;background:none;border:none;color:#CB2125;font-size:13px;font-weight:600;">{{ t.remove }}</button>
                 </div>
               </div>
             </sc-for>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 0 12px;">
+              <span style="font-size:15px;font-weight:700;color:#2A397D;">{{ t.total }}</span>
+              <span style="font-size:17px;font-weight:700;color:#2A397D;">{{ basketTotalLabel }}</span>
+            </div>
+            <sc-if value="{{ hasUnpriced }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size:12px;color:#8A8371;margin:0 0 14px;">{{ t.unpricedNote }}</p>
+            </sc-if>
           </div>
         </sc-if>
       </div>
@@ -160,14 +168,19 @@
 
     <div style="position:sticky;bottom:0;left:0;right:0;background:#2A397D;padding:16px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
       <span style="color:#FAFAFA;font-size:14px;font-weight:600;">{{ basketCountLabel }}</span>
-      <a href="#basket" style="text-decoration:none;background:#FAFAFA;color:#2A397D;font-weight:600;font-size:13.5px;padding:10px 20px;border-radius:100px;">{{ t.reviewBasket }}</a>
+      <div style="display:flex;align-items:center;gap:18px;">
+        <sc-if value="{{ basketHasItems }}" hint-placeholder-val="{{ false }}">
+          <span style="color:#FAFAFA;font-size:15px;font-weight:700;">{{ basketTotalLabel }}</span>
+        </sc-if>
+        <a href="#basket" style="text-decoration:none;background:#FAFAFA;color:#2A397D;font-weight:600;font-size:13.5px;padding:10px 20px;border-radius:100px;">{{ t.reviewBasket }}</a>
+      </div>
     </div>
   </sc-if>
 
   <dc-import name="Footer" lang="{{ lang }}" hint-size="100%,360px"></dc-import>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=oysterbay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;ordersEndpointUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbz9GoYvU2bmjJsgYqK20L4TO7nEengebmt34YcMNhUmmcE6ZVmDXgWXwsouTX1Nwphc/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;oysterbayCsvUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://ringfresh-sheets-proxy.verryberryltd.workers.dev/csv?sheet=oysterbay&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;},&quot;ordersEndpointUrl&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;https://script.google.com/macros/s/AKfycbzkCOQJzGWs9XAomrMIpaZ77-ILFLx2w8j9F5-_SWnI1R3E3_3m36fyZV97KPdfWFl5/exec&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Google Sheet feed&quot;}}">
 function parseCsv(text) {
   const rows = [];
   let row = [], field = '', inQuotes = false;
@@ -312,10 +325,10 @@ const STRINGS = {
   en: {
     kicker: 'Place an Order',
     title: 'Browse products, add to your basket, then send us your details.',
-    subtitle: 'This is a request, not a live checkout — our sales office will confirm final pricing, availability and delivery by phone or WhatsApp.',
+    subtitle: 'This is a request, not a live checkout. Our sales office will confirm final pricing, availability and delivery by phone or WhatsApp.',
     thankYou: 'Thank you.', thankYouBody: "Your order request has been received. We'll confirm by WhatsApp or call shortly.",
     outOfStock: 'Out of stock', unavailable: 'Unavailable',
-    yourBasket: 'Your Basket', basketEmptyMsg: 'Your basket is empty — add products above to get started.', remove: 'Remove',
+    yourBasket: 'Your Basket', basketEmptyMsg: 'Your basket is empty. Add products above to get started.', remove: 'Remove',
     customerName: 'Customer name', customerNamePh: 'Your full name',
     businessName: 'Business / company name', optional: 'Optional',
     phone: 'Phone number', email: 'Email address',
@@ -323,17 +336,18 @@ const STRINGS = {
     deliveryDate: 'Preferred delivery date', notes: 'Notes / special requests',
     reviewBasket: 'Review Basket',
     basketEmptyBar: 'Your basket is empty',
+    total: 'Estimated total', unpricedNote: "Some items don't have a listed price yet. The sales office will confirm those.",
     submitOrderRequest: 'Submit Order Request', sending: 'Sending…',
     addOneProduct: 'Add at least one product to your basket first.',
-    sendFailed: "Couldn't send your order — please try again or contact us directly.",
+    sendFailed: "Couldn't send your order. Please try again or contact us directly.",
   },
   sw: {
     kicker: 'Weka Oda',
     title: 'Angalia bidhaa, ongeza kwenye kikapu chako, kisha tutumie maelezo yako.',
-    subtitle: 'Hii ni ombi, si ununuzi wa moja kwa moja — ofisi yetu ya mauzo itathibitisha bei ya mwisho, upatikanaji na usambazaji kwa simu au WhatsApp.',
+    subtitle: 'Hii ni ombi, si ununuzi wa moja kwa moja. Ofisi yetu ya mauzo itathibitisha bei ya mwisho, upatikanaji na usambazaji kwa simu au WhatsApp.',
     thankYou: 'Asante.', thankYouBody: 'Ombi lako la oda limepokelewa. Tutathibitisha kwa WhatsApp au simu hivi karibuni.',
     outOfStock: 'Hakuna bidhaa', unavailable: 'Haipatikani',
-    yourBasket: 'Kikapu Chako', basketEmptyMsg: 'Kikapu chako ni tupu — ongeza bidhaa hapo juu kuanza.', remove: 'Ondoa',
+    yourBasket: 'Kikapu Chako', basketEmptyMsg: 'Kikapu chako ni tupu. Ongeza bidhaa hapo juu kuanza.', remove: 'Ondoa',
     customerName: 'Jina la mteja', customerNamePh: 'Jina lako kamili',
     businessName: 'Jina la biashara / kampuni', optional: 'Hiari',
     phone: 'Nambari ya simu', email: 'Barua pepe',
@@ -341,9 +355,10 @@ const STRINGS = {
     deliveryDate: 'Tarehe unayopendelea ya usambazaji', notes: 'Maelezo / maombi maalum',
     reviewBasket: 'Angalia Kikapu',
     basketEmptyBar: 'Kikapu chako ni tupu',
+    total: 'Jumla inayokadiriwa', unpricedNote: 'Bidhaa zingine hazina bei bado. Ofisi ya mauzo itathibitisha hizo.',
     submitOrderRequest: 'Tuma Ombi la Oda', sending: 'Inatuma…',
     addOneProduct: 'Ongeza angalau bidhaa moja kwenye kikapu chako kwanza.',
-    sendFailed: 'Imeshindwa kutuma oda yako — tafadhali jaribu tena au wasiliana nasi moja kwa moja.',
+    sendFailed: 'Imeshindwa kutuma oda yako. Tafadhali jaribu tena au wasiliana nasi moja kwa moja.',
   },
 };
 
@@ -439,8 +454,13 @@ class Component extends DCLogic {
     });
     const categories = Object.keys(byCat).map(name => ({ name, items: byCat[name] }));
 
-    const basketItems = productsWithQty.filter(p => p.qty > 0);
+    const basketItems = productsWithQty.filter(p => p.qty > 0).map(p => ({
+      ...p,
+      subtotalLabel: p.price > 0 ? Number(p.price * p.qty).toLocaleString('en-US') + ' TZS' : '',
+    }));
     const basketCount = basketItems.reduce((sum, p) => sum + p.qty, 0);
+    const basketTotal = basketItems.reduce((sum, p) => sum + (p.price || 0) * p.qty, 0);
+    const hasUnpriced = basketItems.some(p => !(p.price > 0));
 
     return {
       t, lang,
@@ -451,6 +471,8 @@ class Component extends DCLogic {
       basketItems,
       basketEmpty: basketItems.length === 0,
       basketHasItems: basketItems.length > 0,
+      basketTotalLabel: Number(basketTotal).toLocaleString('en-US') + ' TZS',
+      hasUnpriced,
       basketCountLabel: basketCount === 0 ? t.basketEmptyBar : `${basketCount} ${lang === 'sw' ? 'bidhaa kwenye kikapu' : ('item' + (basketCount === 1 ? '' : 's') + ' in your basket')}`,
       bottomBarSpace: '64px',
       customerName: this.state.customerName,
@@ -490,7 +512,8 @@ class Component extends DCLogic {
           deliveryAddress: this.state.deliveryAddress,
           deliveryDate: this.state.deliveryDate,
           notes: this.state.notes,
-          items: basketItems.map(it => ({ product: it.name, quantity: it.qty, location: this.pickLocation(it) })),
+          items: basketItems.map(it => ({ product: it.name, quantity: it.qty, unit: it.unit || '', price: it.price || 0, location: this.pickLocation(it) })),
+          totalPrice: basketItems.reduce((sum, it) => sum + (it.price || 0) * it.qty, 0),
         };
 
         const endpoint = this.props.ordersEndpointUrl;
@@ -510,6 +533,8 @@ class Component extends DCLogic {
               debugMsg = `Server responded ${res.status}: ${text.slice(0, 300)}`;
             } else if (parsed && parsed.ok === false) {
               debugMsg = `Order saved but something failed: ${parsed.error || 'unknown error'}`;
+            } else if (parsed && parsed.ok === true && Array.isArray(parsed.notificationErrors) && parsed.notificationErrors.length) {
+              debugMsg = `Order saved, but a notification failed: ${parsed.notificationErrors.join(' | ').slice(0, 300)}`;
             }
           }
           if (debugMsg) {

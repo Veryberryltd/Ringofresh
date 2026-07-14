@@ -64,7 +64,7 @@
       <span>{{ t.lastUpdated }}: <strong style="color:#2A397D;">{{ lastUpdatedLabel }}</strong></span>
       <span>{{ t.lastChecked }}: <strong style="color:#2A397D;">{{ lastCheckedLabel }}</strong></span>
       <sc-if value="{{ showFallbackNotice }}" hint-placeholder-val="{{ false }}">
-        <span style="font-family:monospace;color:#B8781A;">[ showing sample data — connect your Google Sheet in Tweaks ]</span>
+        <span style="font-family:monospace;color:#B8781A;">[ showing sample data, connect your Google Sheet in Tweaks ]</span>
       </sc-if>
       <sc-if value="{{ hasError }}" hint-placeholder-val="{{ false }}">
         <span style="color:#CB2125;">{{ t.errorNotice }}</span>
@@ -200,7 +200,7 @@ const STRINGS = {
     kicker: 'Wholesale Price List', title: 'Live current pricing.',
     placeOrder: 'Place an Order', downloadPdf: 'Download PDF',
     lastUpdated: 'Last updated', lastChecked: 'Last checked',
-    errorNotice: "Couldn't reach the sheet — showing last known prices.",
+    errorNotice: "Couldn't reach the sheet, showing last known prices.",
     downloaded: 'Downloaded', updated: 'Updated', outOfStock: 'Out of stock',
     footerLine: 'Wholesale Fruits & Vegetables · Tanzania & Zanzibar',
     priceNotice: 'Prices subject to change without notice',
@@ -209,7 +209,7 @@ const STRINGS = {
     kicker: 'Orodha ya Bei za Jumla', title: 'Bei za sasa moja kwa moja.',
     placeOrder: 'Weka Oda', downloadPdf: 'Pakua PDF',
     lastUpdated: 'Ilisasishwa mwisho', lastChecked: 'Ilikaguliwa mwisho',
-    errorNotice: 'Imeshindwa kufikia laha — inaonyesha bei za mwisho zinazojulikana.',
+    errorNotice: 'Imeshindwa kufikia laha, inaonyesha bei za mwisho zinazojulikana.',
     downloaded: 'Imepakuliwa', updated: 'Imesasishwa', outOfStock: 'Hakuna bidhaa',
     footerLine: 'Jumla ya Matunda na Mboga · Tanzania na Zanzibar',
     priceNotice: 'Bei zinaweza kubadilika bila taarifa',
@@ -363,7 +363,7 @@ function buildCategories(locations, lang) {
     const inStock = item.inStock !== false;
     byCat[cat].push({
       product: translateProduct(item.product, lang), unit: item.unit,
-      priceLabel: inStock ? (priceNum > 0 ? priceNum.toLocaleString('en-US') + ' TZS' : '—') : (lang === 'sw' ? 'Hakuna bidhaa' : 'Out of stock'),
+      priceLabel: inStock ? (priceNum > 0 ? priceNum.toLocaleString('en-US') + ' TZS' : '') : (lang === 'sw' ? 'Hakuna bidhaa' : 'Out of stock'),
       image: item.photo || null,
       imageSrc: item.photo || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
       imageFallback: item.photoFallback || '',
@@ -546,7 +546,7 @@ class Component extends DCLogic {
   async exportInstagram(canvasW, canvasH, kind) {
     if (!window.html2canvas) return;
     if (this.state.loadingSheet) {
-      this.setState({ exportStatus: 'Still loading products — try again in a moment.' });
+      this.setState({ exportStatus: 'Still loading products, try again in a moment.' });
       setTimeout(() => this.setState({ exportStatus: '' }), 2500);
       return;
     }
@@ -599,7 +599,7 @@ class Component extends DCLogic {
   downloadStory() { this.exportInstagram(1080, 1920, 'story'); }
 
   fmtDate(iso) {
-    if (!iso) return '—';
+    if (!iso) return 'N/A';
     const d = new Date(iso);
     return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) +
       ' ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -619,7 +619,7 @@ class Component extends DCLogic {
       usingFallback: this.state.usingFallback,
       showFallbackNotice: this.state.usingFallback && !this.state.loadingSheet,
       hasError: this.state.hasError,
-      lastUpdatedLabel: this.fmtDate(this.state.lastUpdated) === '—' ? this.fmtDate(new Date().toISOString()) : this.fmtDate(this.state.lastUpdated),
+      lastUpdatedLabel: this.fmtDate(this.state.lastUpdated) === 'N/A' ? this.fmtDate(new Date().toISOString()) : this.fmtDate(this.state.lastUpdated),
       lastCheckedLabel: this.state.lastChecked ? this.fmtDate(this.state.lastChecked) : 'just now',
       downloadedLabel: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
       downloadPdf: () => this.downloadPdf(),
