@@ -26,17 +26,19 @@
     #price-list-printable-section { padding: 0 !important; margin: 0 !important; max-width:none !important; }
     .rf-print-only { display:block !important; }
     .rf-tile-grid > div { break-inside: avoid; page-break-inside: avoid; }
-    .rf-cat-block { page-break-inside: auto; }
+    .rf-cat-block { page-break-inside: auto !important; break-inside: auto !important; }
     .rf-cat-title { page-break-after: avoid; }
     #price-list-printable { padding: 20px 28px !important; }
-    #price-list-printable img[alt="Ringo Fresh"] { height: 40px !important; }
+    #price-list-printable img[alt="Ringo Fresh"] { height: 60px !important; }
     #price-list-printable .rf-price-header-title { font-size: 14px !important; }
     #price-list-printable .rf-cat-block { margin-top: 14px !important; }
     #price-list-printable .rf-cat-title { font-size: 13px !important; margin-bottom: 6px !important; }
-    #price-list-printable .rf-tile-grid { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; }
-    #price-list-printable .rf-tile-grid > div { width: 92px !important; flex: 0 0 92px !important; border-radius: 6px !important; }
+    #price-list-printable .rf-tile-grid { display: grid !important; grid-template-columns: repeat(8, 1fr) !important; gap: 8px !important; }
+    #price-list-printable .rf-tile-grid > div { width: auto !important; flex: none !important; border-radius: 6px !important; }
     #price-list-printable .rf-tile-body { padding: 5px 6px 6px !important; }
     #price-list-printable .rf-tile-name { font-size: 9.5px !important; line-height:1.15 !important; }
+    #price-list-printable.rf-hide-oos [data-oos="true"] { display: none !important; }
+    #price-list-printable.rf-hide-oos .rf-cat-block:not(:has([data-oos="false"])) { display: none !important; }
     #price-list-printable .rf-tile-unit { font-size: 8px !important; margin: 1px 0 3px !important; }
     #price-list-printable .rf-tile-price { font-size: 10px !important; }
     #price-list-printable .rf-cat-block { break-inside: auto !important; page-break-inside: auto !important; }
@@ -58,7 +60,8 @@
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0;">
         <div style="display:flex;gap:14px;">
           <a href="Order.dc.html" style="text-decoration:none;cursor:pointer;background:#CB2125;color:#FAFAFA;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">{{ t.placeOrder }}</a>
-          <button onclick="{{ downloadPdf }}" style="cursor:pointer;background:#2A397D;color:#FAFAFA;border:none;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">{{ t.downloadPdf }}</button>
+          <button onclick="{{ downloadPdfAll }}" style="cursor:pointer;background:#2A397D;color:#FAFAFA;border:none;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">{{ t.downloadPdf }}</button>
+          <button onclick="{{ downloadPdfInStock }}" style="cursor:pointer;background:#FFFFFF;color:#2A397D;border:1px solid #2A397D;font-weight:600;font-size:14px;padding:14px 26px;border-radius:100px;">{{ t.downloadPdfInStock }}</button>
         </div>
       </div>
     </div>
@@ -99,11 +102,11 @@
         </div>
       </sc-if>
       <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="0">
-        <div class="rf-cat-block" style="margin-top:28px;break-inside:avoid;page-break-inside:avoid;">
+        <div class="rf-cat-block" style="margin-top:28px;">
           <div class="rf-cat-title" style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:18px;color:#2A397D;margin-bottom:14px;break-after:avoid;page-break-after:avoid;">{{ cat.name }}</div>
           <div class="rf-tile-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:18px;">
             <sc-for list="{{ cat.rows }}" as="row" hint-placeholder-count="0">
-              <div style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;opacity:{{ row.tileOpacity }};break-inside:avoid;page-break-inside:avoid;">
+              <div data-oos="{{ row.outOfStock }}" style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;opacity:{{ row.tileOpacity }};break-inside:avoid;page-break-inside:avoid;">
                 <div style="width:100%;aspect-ratio:1;background:{{ row.placeholderBg }};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;">
                   <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:#8A8371;">photo</span>
                   <img src="{{ row.imageSrc }}" alt="{{ row.product }}" loading="lazy" decoding="async" data-fallback="{{ row.imageFallback }}" onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" style="position:relative;width:100%;height:100%;object-fit:cover;object-position:{{ row.imagePosition }};transform:scale({{ row.imageScale }});display:{{ row.imageDisplay }};" />
@@ -143,7 +146,7 @@
               <button onclick="{{ downloadPost }}" disabled="{{ exporting }}" style="cursor:pointer;background:#8AA000;color:#FAF6EE;border:none;font-weight:600;font-size:13px;padding:11px 20px;border-radius:100px;opacity:{{ exportButtonOpacity }};">{{ postButtonLabel }}</button>
               <button onclick="{{ downloadStory }}" disabled="{{ exporting }}" style="cursor:pointer;background:transparent;color:#2A397D;border:1px solid #2A397D;font-weight:600;font-size:13px;padding:11px 20px;border-radius:100px;opacity:{{ exportButtonOpacity }};">{{ storyButtonLabel }}</button>
             </div>
-            <sc-if value="{{ exporting }}" hint-placeholder-val="{{ false }}">
+            <sc-if value="{{ hasExportStatus }}" hint-placeholder-val="{{ false }}">
               <span style="font-size:12px;color:#8A8371;">{{ exportStatus }}</span>
             </sc-if>
           </div>
@@ -200,7 +203,7 @@ function translateCategory(name, lang) { return lang === 'sw' ? (CATEGORY_SW[nam
 const STRINGS = {
   en: {
     kicker: 'Wholesale Price List', title: 'Live current pricing.',
-    placeOrder: 'Place an Order', downloadPdf: 'Download PDF',
+    placeOrder: 'Place an Order', downloadPdf: 'Download PDF', downloadPdfInStock: 'PDF (In Stock Only)',
     lastUpdated: 'Last updated', lastChecked: 'Last checked',
     errorNotice: "Couldn't reach the sheet, showing last known prices.",
     downloaded: 'Downloaded', updated: 'Updated', outOfStock: 'Out of stock',
@@ -209,7 +212,7 @@ const STRINGS = {
   },
   sw: {
     kicker: 'Orodha ya Bei za Jumla', title: 'Bei za sasa moja kwa moja.',
-    placeOrder: 'Weka Oda', downloadPdf: 'Pakua PDF',
+    placeOrder: 'Weka Oda', downloadPdf: 'Pakua PDF', downloadPdfInStock: 'PDF (Zilizopo Tu)',
     lastUpdated: 'Ilisasishwa mwisho', lastChecked: 'Ilikaguliwa mwisho',
     errorNotice: 'Imeshindwa kufikia laha, inaonyesha bei za mwisho zinazojulikana.',
     downloaded: 'Imepakuliwa', updated: 'Imesasishwa', outOfStock: 'Hakuna bidhaa',
@@ -466,12 +469,18 @@ class Component extends DCLogic {
     }
   }
 
-  downloadPdf() {
+  downloadPdf(hideOutOfStock) {
+    const el = document.getElementById('price-list-printable');
+    if (el) el.classList.toggle('rf-hide-oos', !!hideOutOfStock);
     const now = new Date();
     const dateStamp = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
     const prevTitle = document.title;
-    const restore = () => { document.title = prevTitle; window.removeEventListener('afterprint', restore); };
-    document.title = `Ringo Fresh Price List (${dateStamp})`;
+    const restore = () => {
+      document.title = prevTitle;
+      if (el) el.classList.remove('rf-hide-oos');
+      window.removeEventListener('afterprint', restore);
+    };
+    document.title = `Ringo Fresh Price List (${dateStamp})${hideOutOfStock ? ' - In Stock' : ''}`;
     window.addEventListener('afterprint', restore);
     window.print();
   }
@@ -485,7 +494,7 @@ class Component extends DCLogic {
   buildInstagramProducts() {
     const items = Object.keys(this.state.locations || {}).reduce(
       (all, key) => all.concat(this.state.locations[key] || []), []
-    ).filter(it => it.inStock);
+    ).filter(it => it.inStock !== false);
     const anyColPresent = items.some(it => it.hasInstagramCol);
     if (!anyColPresent) return items; // no column anywhere yet — include everything (zero-config default)
     return items.filter(it => it.hasInstagramCol && it.instagram);
@@ -508,7 +517,7 @@ class Component extends DCLogic {
     const HEADER_H = 216; // 28 top padding + 174 logo + 14 bottom padding
     const BOTTOM_PAD = 28;
     const cardH = Math.floor((canvasH - HEADER_H - BOTTOM_PAD - GAP * (ROWS - 1)) / ROWS);
-    const photoH = Math.round(cardH * 0.6);
+    const photoH = Math.round(cardH * 0.52);
     const cardsHtml = pageProducts.map((p, i) => {
       const priceNum = Number(p.price) || 0;
       const priceLabel = priceNum > 0 ? priceNum.toLocaleString('en-US') + ' TZS' : 'Price on request';
@@ -530,15 +539,19 @@ class Component extends DCLogic {
       // canvas bounds and the bottom row doesn't get clipped off.
       return `<div style="background:#FFFFFF;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 6px 18px rgba(20,24,60,0.12);height:${cardH}px;">
         <div style="width:100%;height:${photoH}px;background:${bg};position:relative;flex-shrink:0;${photoStyle}"></div>
-        <div style="padding:5px 7px 6px;flex:1;min-height:0;overflow:hidden;">
-          <div style="font-size:12.5px;font-weight:700;color:#241F1A;line-height:1.2;">${p.product}</div>
-          <div style="font-size:10px;font-weight:600;color:#7A7264;margin:3px 0 3px;">${unitLabel}</div>
-          <div style="font-size:13px;font-weight:800;color:#2A397D;">${priceLabel}</div>
+        <div style="padding:5px 7px 6px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;">
+          <div style="font-size:11px;font-weight:700;color:#241F1A;line-height:1.15;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;">${p.product}</div>
+          <div style="font-size:9px;font-weight:600;color:#7A7264;margin:2px 0 2px;">${unitLabel}</div>
+          <div style="font-size:12.5px;font-weight:800;color:#2A397D;flex-shrink:0;">${priceLabel}</div>
         </div>
       </div>`;
     }).join('');
     return `<div style="width:${canvasW}px;height:${canvasH}px;background:#FAFAFA;font-family:'Work Sans',sans-serif;display:flex;flex-direction:column;position:relative;overflow:hidden;">
       <img src="assets/eatwell-logo.svg" crossorigin="anonymous" style="position:absolute;top:20px;right:32px;height:46px;width:auto;" />
+      <div style="position:absolute;top:72px;right:32px;text-align:right;line-height:1.4;">
+        <div style="font-size:12px;font-weight:700;color:#2A397D;">Price List</div>
+        <div style="font-size:10px;font-weight:600;color:#7A7264;">${downloadedLabel}</div>
+      </div>
       <div style="padding:28px 48px 14px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
         <img src="assets/ringfresh-logo.svg" crossorigin="anonymous" style="height:174px;width:auto;" />
       </div>
@@ -549,7 +562,10 @@ class Component extends DCLogic {
   }
 
   async exportInstagram(canvasW, canvasH, kind) {
-    if (!window.html2canvas) return;
+    if (!window.html2canvas) {
+      this.setState({ exportStatus: "Still loading, please try again in a moment." });
+      return;
+    }
     if (this.state.loadingSheet) {
       this.setState({ exportStatus: 'Still loading products, try again in a moment.' });
       setTimeout(() => this.setState({ exportStatus: '' }), 2500);
@@ -579,27 +595,38 @@ class Component extends DCLogic {
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
 
         const rawCanvas = await window.html2canvas(stage.firstChild, {
-          backgroundColor: '#FAFAFA', scale: 2, useCORS: true, width: canvasW, height: canvasH,
+          backgroundColor: '#FAFAFA', scale: 2, useCORS: true, allowTaint: true, width: canvasW, height: canvasH,
         });
         // Resample down to a clean fixed-size export so the JPEG stays a manageable file size.
         const outCanvas = document.createElement('canvas');
         outCanvas.width = canvasW; outCanvas.height = canvasH;
         outCanvas.getContext('2d').drawImage(rawCanvas, 0, 0, canvasW, canvasH);
 
+        let dataUrl;
+        try {
+          dataUrl = outCanvas.toDataURL('image/jpeg', 0.88);
+        } catch (taintErr) {
+          // Canvas got tainted by a cross-origin image without CORS headers — fall
+          // back to the untouched raw canvas render (still usually exportable).
+          dataUrl = rawCanvas.toDataURL('image/jpeg', 0.88);
+        }
         const link = document.createElement('a');
         const suffix = pages.length > 1 ? `-${i + 1}-of-${pages.length}` : '';
         link.download = `ringofresh-${kind}-${dateSlug}${suffix}.jpg`;
-        link.href = outCanvas.toDataURL('image/jpeg', 0.88);
+        link.href = dataUrl;
         link.click();
 
         if (i < pages.length - 1) await new Promise(r => setTimeout(r, 350));
       }
+    } catch (err) {
+      console.error('Instagram export failed', err);
+      this.setState({ exportStatus: "Couldn't create the image, please try again." });
+      setTimeout(() => this.setState({ exportStatus: '' }), 3000);
     } finally {
       document.body.removeChild(stage);
-      this.setState({ exporting: false, exportStatus: '' });
+      this.setState({ exporting: false });
     }
   }
-
   downloadPost() { this.exportInstagram(1080, 1080, 'post'); }
   downloadStory() { this.exportInstagram(1080, 1920, 'story'); }
 
@@ -627,9 +654,12 @@ class Component extends DCLogic {
       lastUpdatedLabel: this.fmtDate(this.state.lastUpdated) === 'N/A' ? this.fmtDate(new Date().toISOString()) : this.fmtDate(this.state.lastUpdated),
       lastCheckedLabel: this.state.lastChecked ? this.fmtDate(this.state.lastChecked) : 'just now',
       downloadedLabel: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      downloadPdf: () => this.downloadPdf(),
+      downloadPdf: () => this.downloadPdf(false),
+      downloadPdfAll: () => this.downloadPdf(false),
+      downloadPdfInStock: () => this.downloadPdf(true),
       exporting: this.state.exporting,
       exportStatus: this.state.exportStatus,
+      hasExportStatus: !!this.state.exportStatus,
       exportButtonOpacity: this.state.exporting ? 0.6 : 1,
       postButtonLabel: this.state.exporting ? 'Preparing…' : 'Download Instagram Post (1080×1080)',
       storyButtonLabel: this.state.exporting ? 'Preparing…' : 'Download Instagram Story (1080×1920)',
