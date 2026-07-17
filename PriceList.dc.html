@@ -121,7 +121,7 @@
               <div data-oos="{{ row.outOfStock }}" style="border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;opacity:{{ row.tileOpacity }};break-inside:avoid;page-break-inside:avoid;">
                 <div style="width:100%;aspect-ratio:1;background:{{ row.placeholderBg }};position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;">
                   <span style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:9px;color:#8A8371;">photo</span>
-                  <img src="{{ row.imageSrc }}" alt="{{ row.product }}" loading="lazy" decoding="async" data-fallback="{{ row.imageFallback }}" onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" style="position:relative;width:100%;height:100%;object-fit:cover;object-position:{{ row.imagePosition }};transform:scale({{ row.imageScale }});display:{{ row.imageDisplay }};" />
+                  <img src="{{ row.imageSrc }}" alt="{{ row.product }}" loading="eager" decoding="async" data-fallback="{{ row.imageFallback }}" onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.style.display='none'}" style="position:relative;width:100%;height:100%;object-fit:cover;object-position:{{ row.imagePosition }};transform:scale({{ row.imageScale }});display:{{ row.imageDisplay }};" />
                   <sc-if value="{{ row.outOfStock }}" hint-placeholder-val="{{ false }}">
                     <span style="position:absolute;top:8px;left:8px;background:#241F1A;color:#FFFFFF;font-size:9.5px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;">{{ t.outOfStock }}</span>
                   </sc-if>
@@ -500,7 +500,17 @@ class Component extends DCLogic {
     };
     document.title = `Ringo Fresh Price List (${dateStamp})${hideOutOfStock ? ' - In Stock' : ''}`;
     window.addEventListener('afterprint', restore);
-    window.print();
+    // Images inside the printable section are eager-loaded, but on a slow
+    // connection some may still be mid-fetch — wait briefly for any stragglers
+    // so the printed PDF doesn't have blank gaps where a photo hadn't finished
+    // loading yet (a common issue on mobile where most tiles start off-screen).
+    const imgs = el ? Array.from(el.querySelectorAll('img')) : [];
+    const pending = imgs.filter(img => !img.complete);
+    if (!pending.length) { window.print(); return; }
+    let done = 0;
+    const finish = () => { done++; if (done >= pending.length) window.print(); };
+    pending.forEach(img => { img.addEventListener('load', finish, { once: true }); img.addEventListener('error', finish, { once: true }); });
+    setTimeout(() => { if (done < pending.length) window.print(); }, 4000);
   }
 
   // 12 products per page, in a grid — reflects only what's currently in stock
