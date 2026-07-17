@@ -16,6 +16,7 @@
 <link rel="dns-prefetch" href="https://images.weserv.nl">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   body{margin:0;background:#FAFAFA;}
   @media (max-width: 640px) {
@@ -87,6 +88,9 @@
         <button type="button" onclick="{{ setInStockOnly }}" style="cursor:pointer;border:0;border-radius:100px;padding:6px 14px;font-size:12px;font-weight:700;letter-spacing:0.3px;background:{{ inStockBg }};color:{{ inStockColor }};">{{ t.filterInStock }}</button>
       </div>
     </div>
+    <sc-if value="{{ hasExportStatus }}" hint-placeholder-val="{{ false }}">
+      <div style="margin-top:10px;font-size:12.5px;color:#8A8371;">{{ exportStatus }}</div>
+    </sc-if>
   </section>
 
   <section id="price-list-printable-section" style="max-width:1320px;margin:0 auto;padding:16px 40px 64px;">
@@ -487,30 +491,133 @@ class Component extends DCLogic {
     }
   }
 
-  downloadPdf(hideOutOfStock) {
-    const el = document.getElementById('price-list-printable');
-    if (el) el.classList.toggle('rf-hide-oos', !!hideOutOfStock);
+  // Manually paginated PDF: each page is rendered at a fixed size to an image
+  // and assembled with jsPDF — this sidesteps browser print-pagination, which
+  // handles CSS break rules inconsistently (especially on iOS) and was
+  // cutting photos, orphaning category titles, and dropping whole sections.
+  pdfPageHtml(page, downloadedLabel, updatedLabel, PAGE_W, PAGE_H, MARGIN, TILE_W, TILE_IMG_H, GAP, t) {
+    let inner = '';
+    if (page.isFirst) {
+      inner += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <img src="assets/ringfresh-logo.svg" crossorigin="anonymous" style="height:56px;width:auto;" />
+        <div style="text-align:right;">
+          <div style="font-family:'Libre Caslon Text',serif;font-size:16px;color:#2A397D;">${t.kicker}</div>
+          <div style="font-size:10px;color:#8A8371;margin-top:4px;">${t.downloaded}: ${downloadedLabel} &middot; ${t.updated}: ${updatedLabel}</div>
+        </div>
+      </div>
+      <div style="height:1px;background:#EAE2D3;margin-bottom:18px;"></div>`;
+    }
+    page.blocks.forEach(b => {
+      if (b.type === 'cat') {
+        inner += `<div style="font-family:'Libre Caslon Text',serif;font-size:15px;color:#2A397D;margin:18px 0 10px;">${b.name}</div>`;
+      } else {
+        inner += `<div style="display:flex;gap:${GAP}px;margin-bottom:${GAP}px;">` + b.items.map(row => {
+          const photoUrl = row.image ? `https://images.weserv.nl/?url=${encodeURIComponent(row.image.replace(/^https?:\/\//, ''))}` : '';
+          return `<div style="width:${TILE_W}px;">
+            <div style="width:${TILE_W}px;height:${TILE_IMG_H}px;border-radius:8px;overflow:hidden;background:#F2EEE4;${photoUrl ? `background-image:url('${photoUrl}');background-size:cover;background-position:center;` : ''}"></div>
+            <div style="margin-top:6px;font-size:11px;font-weight:700;color:#241F1A;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;">${row.product}</div>
+            <div style="font-size:9.5px;color:#8A8371;margin:2px 0;">${row.unit || ''}</div>
+            <div style="font-size:11.5px;font-weight:800;color:#2A397D;">${row.priceLabel}</div>
+          </div>`;
+        }).join('') + `</div>`;
+      }
+    });
+    return `<div style="width:${PAGE_W}px;height:${PAGE_H}px;background:#FFFFFF;box-sizing:border-box;padding:${MARGIN}px;font-family:'Work Sans',sans-serif;overflow:hidden;">${inner}</div>`;
+  }
+
+  async downloadPdf(hideOutOfStock) {
+    if (!window.html2canvas || !window.jspdf) {
+      this.setState({ exportStatus: 'Still loading, please try again in a moment.' });
+      return;
+    }
+    const lang = this.state.lang;
+    const t = STRINGS[lang] || STRINGS.en;
+    const rawCategories = buildCategories(this.state.locations, lang);
+    const categories = hideOutOfStock
+      ? rawCategories.map(c => ({ ...c, rows: c.rows.filter(r => r.inStock) })).filter(c => c.rows.length)
+      : rawCategories;
+    if (!categories.length) {
+      this.setState({ exportStatus: 'No products found to export.' });
+      setTimeout(() => this.setState({ exportStatus: '' }), 2500);
+      return;
+    }
+
+    const PAGE_W = 816, PAGE_H = 1056, MARGIN = 40, COLS = 4, GAP = 16;
+    const CONTENT_W = PAGE_W - MARGIN * 2;
+    const TILE_W = Math.floor((CONTENT_W - GAP * (COLS - 1)) / COLS);
+    const TILE_H = TILE_W + 66;
+    const CAT_H = 32 + 18;
+    const HEADER_H = 130;
+    const maxY = PAGE_H - MARGIN * 2;
+
+    const blocks = [];
+    categories.forEach(cat => {
+      blocks.push({ type: 'cat', name: cat.name });
+      for (let i = 0; i < cat.rows.length; i += COLS) blocks.push({ type: 'row', items: cat.rows.slice(i, i + COLS) });
+    });
+
+    const pages = [];
+    let page = { blocks: [], isFirst: true };
+    let y = HEADER_H;
+    blocks.forEach((b, i) => {
+      if (b.type === 'cat') {
+        const nextIsRow = blocks[i + 1] && blocks[i + 1].type === 'row';
+        const needed = CAT_H + (nextIsRow ? TILE_H + GAP : 0);
+        if (y + needed > maxY) { pages.push(page); page = { blocks: [], isFirst: false }; y = 0; }
+        page.blocks.push(b); y += CAT_H;
+      } else {
+        if (y + TILE_H + GAP > maxY) { pages.push(page); page = { blocks: [], isFirst: false }; y = 0; }
+        page.blocks.push(b); y += TILE_H + GAP;
+      }
+    });
+    pages.push(page);
+
+    this.setState({ exporting: true, exportStatus: `Preparing PDF 1 of ${pages.length}…` });
+    const stage = document.createElement('div');
+    stage.style.cssText = 'position:fixed;left:0;top:0;z-index:-1;opacity:1;pointer-events:none;';
+    document.body.appendChild(stage);
+
     const now = new Date();
-    const dateStamp = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-    const prevTitle = document.title;
-    const restore = () => {
-      document.title = prevTitle;
-      if (el) el.classList.remove('rf-hide-oos');
-      window.removeEventListener('afterprint', restore);
-    };
-    document.title = `Ringo Fresh Price List (${dateStamp})${hideOutOfStock ? ' - In Stock' : ''}`;
-    window.addEventListener('afterprint', restore);
-    // Images inside the printable section are eager-loaded, but on a slow
-    // connection some may still be mid-fetch — wait briefly for any stragglers
-    // so the printed PDF doesn't have blank gaps where a photo hadn't finished
-    // loading yet (a common issue on mobile where most tiles start off-screen).
-    const imgs = el ? Array.from(el.querySelectorAll('img')) : [];
-    const pending = imgs.filter(img => !img.complete);
-    if (!pending.length) { window.print(); return; }
-    let done = 0;
-    const finish = () => { done++; if (done >= pending.length) window.print(); };
-    pending.forEach(img => { img.addEventListener('load', finish, { once: true }); img.addEventListener('error', finish, { once: true }); });
-    setTimeout(() => { if (done < pending.length) window.print(); }, 4000);
+    const downloadedLabel = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    const updatedLabel = this.state.lastUpdated ? this.fmtDate(this.state.lastUpdated) : downloadedLabel;
+    const jsPDF = window.jspdf.jsPDF;
+    const pdf = new jsPDF({ unit: 'px', format: [PAGE_W, PAGE_H] });
+
+    try {
+      for (let p = 0; p < pages.length; p++) {
+        this.setState({ exportStatus: `Preparing PDF ${p + 1} of ${pages.length}…` });
+        stage.innerHTML = this.pdfPageHtml(pages[p], downloadedLabel, updatedLabel, PAGE_W, PAGE_H, MARGIN, TILE_W, TILE_W, GAP, t);
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const imgs = Array.from(stage.querySelectorAll('img'));
+        await Promise.race([
+          Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
+            img.addEventListener('load', res, { once: true });
+            img.addEventListener('error', res, { once: true });
+          }))),
+          new Promise(res => setTimeout(res, 5000)),
+        ]);
+        const canvas = await Promise.race([
+          window.html2canvas(stage.firstChild, {
+            backgroundColor: '#FFFFFF', scale: 2, useCORS: true, allowTaint: true, width: PAGE_W, height: PAGE_H,
+          }),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('capture timed out')), 12000)),
+        ]);
+        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        if (p > 0) pdf.addPage([PAGE_W, PAGE_H]);
+        pdf.addImage(imgData, 'JPEG', 0, 0, PAGE_W, PAGE_H);
+      }
+      const dateSlug = now.toISOString().slice(0, 10);
+      pdf.save(`ringofresh-pricelist${hideOutOfStock ? '-instock' : ''}-${dateSlug}.pdf`);
+    } catch (err) {
+      console.error('PDF export failed', err);
+      this.setState({ exportStatus: pdf.internal.getNumberOfPages() > 0 && err.message === 'capture timed out'
+        ? "A photo took too long to load — try again on a stronger connection."
+        : "Couldn't create the PDF, please try again." });
+      setTimeout(() => this.setState({ exportStatus: '' }), 4000);
+    } finally {
+      document.body.removeChild(stage);
+      this.setState({ exporting: false, exportStatus: this.state.exportStatus === "Couldn't create the PDF, please try again." ? this.state.exportStatus : '' });
+    }
   }
 
   // 12 products per page, in a grid — reflects only what's currently in stock
@@ -693,9 +800,9 @@ class Component extends DCLogic {
       lastUpdatedLabel: this.fmtDate(this.state.lastUpdated) === 'N/A' ? this.fmtDate(new Date().toISOString()) : this.fmtDate(this.state.lastUpdated),
       lastCheckedLabel: this.state.lastChecked ? this.fmtDate(this.state.lastChecked) : 'just now',
       downloadedLabel: now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
-      downloadPdf: () => this.downloadPdf(false),
-      downloadPdfAll: () => this.downloadPdf(false),
-      downloadPdfInStock: () => this.downloadPdf(true),
+      downloadPdf: () => { this.downloadPdf(false); },
+      downloadPdfAll: () => { this.downloadPdf(false); },
+      downloadPdfInStock: () => { this.downloadPdf(true); },
       exporting: this.state.exporting,
       exportStatus: this.state.exportStatus,
       hasExportStatus: !!this.state.exportStatus,
