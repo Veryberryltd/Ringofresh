@@ -498,31 +498,33 @@ class Component extends DCLogic {
   pdfPageHtml(page, downloadedLabel, updatedLabel, PAGE_W, PAGE_H, MARGIN, TILE_W, TILE_IMG_H, GAP, t) {
     let inner = '';
     if (page.isFirst) {
-      inner += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-        <img src="assets/ringfresh-logo.svg" crossorigin="anonymous" style="height:56px;width:auto;" />
+      inner += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
+        <img src="assets/ringfresh-logo.svg" style="height:60px;width:auto;display:block;" />
         <div style="text-align:right;">
-          <div style="font-family:'Libre Caslon Text',serif;font-size:16px;color:#2A397D;">${t.kicker}</div>
-          <div style="font-size:10px;color:#8A8371;margin-top:4px;">${t.downloaded}: ${downloadedLabel} &middot; ${t.updated}: ${updatedLabel}</div>
+          <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#CB2125;font-weight:700;margin-bottom:4px;">${t.kicker}</div>
+          <div style="font-size:10px;color:#8A8371;">${t.downloaded}: ${downloadedLabel} &middot; ${t.updated}: ${updatedLabel}</div>
         </div>
       </div>
-      <div style="height:1px;background:#EAE2D3;margin-bottom:18px;"></div>`;
+      <div style="height:1px;background:#EAE2D3;margin-bottom:20px;"></div>`;
     }
     page.blocks.forEach(b => {
       if (b.type === 'cat') {
-        inner += `<div style="font-family:'Libre Caslon Text',serif;font-size:15px;color:#2A397D;margin:18px 0 10px;">${b.name}</div>`;
+        inner += `<div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:19px;color:#2A397D;margin:20px 0 12px;">${b.name}</div>`;
       } else {
         inner += `<div style="display:flex;gap:${GAP}px;margin-bottom:${GAP}px;">` + b.items.map(row => {
           const photoUrl = row.image ? `https://images.weserv.nl/?url=${encodeURIComponent(row.image.replace(/^https?:\/\//, ''))}` : '';
-          return `<div style="width:${TILE_W}px;">
-            <div style="width:${TILE_W}px;height:${TILE_IMG_H}px;border-radius:8px;overflow:hidden;background:#F2EEE4;${photoUrl ? `background-image:url('${photoUrl}');background-size:cover;background-position:center;` : ''}"></div>
-            <div style="margin-top:6px;font-size:11px;font-weight:700;color:#241F1A;line-height:1.2;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;">${row.product}</div>
-            <div style="font-size:9.5px;color:#8A8371;margin:2px 0;">${row.unit || ''}</div>
-            <div style="font-size:11.5px;font-weight:800;color:#2A397D;">${row.priceLabel}</div>
+          return `<div style="width:${TILE_W}px;background:#FFFFFF;border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;">
+            <div style="width:${TILE_W}px;height:${TILE_IMG_H}px;background:#F2EEE4;${photoUrl ? `background-image:url('${photoUrl}');background-size:cover;background-position:center;` : ''}"></div>
+            <div style="padding:8px 10px 10px;">
+              <div style="font-size:11px;font-weight:700;color:#241F1A;line-height:1.25;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;">${row.product}</div>
+              <div style="font-size:9.5px;color:#8A8371;margin:3px 0 5px;">${row.unit || ''}</div>
+              <div style="font-size:12px;font-weight:800;color:#2A397D;">${row.priceLabel}</div>
+            </div>
           </div>`;
         }).join('') + `</div>`;
       }
     });
-    return `<div style="width:${PAGE_W}px;height:${PAGE_H}px;background:#FFFFFF;box-sizing:border-box;padding:${MARGIN}px;font-family:'Work Sans',sans-serif;overflow:hidden;">${inner}</div>`;
+    return `<div style="width:${PAGE_W}px;height:${PAGE_H}px;background:#FAFAFA;box-sizing:border-box;padding:${MARGIN}px;font-family:'Work Sans',sans-serif;overflow:hidden;">${inner}</div>`;
   }
 
   async downloadPdf(hideOutOfStock) {
