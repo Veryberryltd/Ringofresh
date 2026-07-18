@@ -309,6 +309,22 @@ function driveLinkToDirectUrl(link) {
   }
   return link;
 }
+function driveLinkToHighResUrl(link) {
+  // The on-page thumbnail (driveLinkToDirectUrl) is capped at ~500px so the
+  // website loads fast — that cap makes it useless as a PDF source since no
+  // amount of upscaling downstream can recover detail a 500px image never had.
+  // This pulls the same photo at a much larger size for print-quality export.
+  if (!link) return '';
+  const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
+  for (const p of patterns) {
+    const m = link.match(p);
+    if (m) {
+      const driveUrl = 'drive.google.com/thumbnail?id=' + m[1] + '&sz=w2000';
+      return 'https://images.weserv.nl/?url=' + encodeURIComponent(driveUrl) + '&q=95&output=png';
+    }
+  }
+  return link;
+}
 function driveLinkToFallbackUrl(link) {
   if (!link) return '';
   const patterns = [/\/d\/([a-zA-Z0-9_-]+)/, /[?&]id=([a-zA-Z0-9_-]+)/];
@@ -347,6 +363,7 @@ function csvToItems(matrix) {
       unit: String(r[iUnit] || '').trim(),
       price: Number(String(r[iPrice] || '').replace(/[^0-9.]/g, '')) || 0,
       photo: driveLinkToDirectUrl(String(r[iPhoto] || '').trim()),
+      photoHighRes: driveLinkToHighResUrl(String(r[iPhoto] || '').trim()),
       photoFallback: driveLinkToFallbackUrl(String(r[iPhoto] || '').trim()),
       instagram: instagramRaw === 'yes',
       hasInstagramCol: iInstagram !== -1,
@@ -391,6 +408,7 @@ function buildCategories(locations, lang) {
       product: translateProduct(item.product, lang), unit: item.unit,
       priceLabel: inStock ? (priceNum > 0 ? priceNum.toLocaleString('en-US') + ' TZS' : '') : (lang === 'sw' ? 'Hakuna bidhaa' : 'Out of stock'),
       image: item.photo || null,
+      imageHighRes: item.photoHighRes || item.photo || null,
       imageSrc: item.photo || 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==',
       imageFallback: item.photoFallback || '',
       imageDisplay: item.photo ? 'block' : 'none',
@@ -499,7 +517,10 @@ class Component extends DCLogic {
     let inner = '';
     if (page.isFirst) {
       inner += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-        <img src="assets/ringfresh-logo.svg" style="height:60px;width:auto;display:block;" />
+        <div style="display:flex;align-items:center;gap:14px;">
+          <img src="assets/ringfresh-logo.svg" style="height:60px;width:auto;display:block;" />
+          <img src="assets/eatwell-logo.svg" style="height:26px;width:auto;display:block;" />
+        </div>
         <div style="text-align:right;">
           <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#CB2125;font-weight:700;margin-bottom:4px;">${t.kicker}</div>
           <div style="font-size:10px;color:#8A8371;">${t.downloaded}: ${downloadedLabel} &middot; ${t.updated}: ${updatedLabel}</div>
@@ -512,7 +533,7 @@ class Component extends DCLogic {
         inner += `<div style="font-family:'Libre Caslon Text',serif;font-weight:400;font-size:19px;color:#2A397D;margin:20px 0 12px;">${b.name}</div>`;
       } else {
         inner += `<div style="display:flex;gap:${GAP}px;margin-bottom:${GAP}px;">` + b.items.map(row => {
-          const photoUrl = row.image ? `https://images.weserv.nl/?url=${encodeURIComponent(row.image.replace(/^https?:\/\//, ''))}` : '';
+          const photoUrl = row.imageHighRes || '';
           return `<div style="width:${TILE_W}px;background:#FFFFFF;border:1px solid #EFE9DC;border-radius:10px;overflow:hidden;">
             <div style="width:${TILE_W}px;height:${TILE_IMG_H}px;background:#F2EEE4;${photoUrl ? `background-image:url('${photoUrl}');background-size:cover;background-position:center;` : ''}"></div>
             <div style="padding:8px 10px 10px;">
@@ -592,19 +613,19 @@ class Component extends DCLogic {
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
         const imgs = Array.from(stage.querySelectorAll('img'));
         await Promise.race([
-          Promise.all(imgs.map(img => img.complete ? Promise.resolve() : new Promise(res => {
+          Promise.all(imgs.map(img => img.complete && img.naturalWidth > 0 ? Promise.resolve() : new Promise(res => {
             img.addEventListener('load', res, { once: true });
             img.addEventListener('error', res, { once: true });
           }))),
-          new Promise(res => setTimeout(res, 5000)),
+          new Promise(res => setTimeout(res, 15000)),
         ]);
         const canvas = await Promise.race([
           window.html2canvas(stage.firstChild, {
-            backgroundColor: '#FFFFFF', scale: 2, useCORS: true, allowTaint: true, width: PAGE_W, height: PAGE_H,
+            backgroundColor: '#FFFFFF', scale: 4, useCORS: true, allowTaint: true, width: PAGE_W, height: PAGE_H, imageTimeout: 20000,
           }),
-          new Promise((_, rej) => setTimeout(() => rej(new Error('capture timed out')), 12000)),
+          new Promise((_, rej) => setTimeout(() => rej(new Error('capture timed out')), 30000)),
         ]);
-        const imgData = canvas.toDataURL('image/jpeg', 0.92);
+        const imgData = canvas.toDataURL('image/jpeg', 1.0);
         if (p > 0) pdf.addPage([PAGE_W, PAGE_H]);
         pdf.addImage(imgData, 'JPEG', 0, 0, PAGE_W, PAGE_H);
       }
